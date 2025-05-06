@@ -1,5 +1,5 @@
 {
-  "name": "extra/wechat-mini-program-auth-bundle",
+  "name": "tourze/wechat-mini-program-auth-bundle",
   "description": "微信小程序授权",
   "type": "symfony-bundle",
   "license": "MIT",
