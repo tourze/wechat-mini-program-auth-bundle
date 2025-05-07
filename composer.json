@@ -27,7 +27,8 @@
     "tourze/doctrine-indexed-bundle": "0.0.*",
     "tourze/doctrine-ip-bundle": "0.0.*",
     "tourze/doctrine-track-bundle": "0.1.*",
-    "tourze/json-rpc-core": "^0.0.6"
+    "tourze/json-rpc-core": "^0.0.6",
+    "tourze/easy-admin-menu-bundle": "0.1.*"
   },
   "autoload": {
     "psr-4": {
