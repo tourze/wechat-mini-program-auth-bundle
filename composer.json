@@ -29,7 +29,14 @@
     "tourze/doctrine-track-bundle": "0.1.*",
     "tourze/json-rpc-core": "^0.0.6",
     "tourze/easy-admin-menu-bundle": "0.1.*",
-    "psr/log": "^3|^2|^1"
+    "psr/log": "^3|^2|^1",
+    "tourze/lock-service-bundle": "0.0.*",
+    "symfony/security-core": "^6.4",
+    "symfony/event-dispatcher-contracts": "^2.5 | ^3",
+    "symfony/security-bundle": "^6.4",
+    "yiisoft/json": "^1.0",
+    "symfony/http-foundation": "^6.4",
+    "tourze/doctrine-upsert-bundle": "0.1.*"
   },
   "autoload": {
     "psr-4": {
