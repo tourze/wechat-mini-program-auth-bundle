@@ -137,7 +137,7 @@ class UpdateWechatMiniProgramProfile extends LockableProcedure implements LogFor
         $this->entityManager->persist($user);
         $this->entityManager->flush();
 
-        $this->userRepository->transformToBizUser($user);
+        $this->userRepository->transformToSysUser($user);
 
         return [
             '__message' => '授权成功',

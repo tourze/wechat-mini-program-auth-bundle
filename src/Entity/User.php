@@ -121,7 +121,7 @@ class User implements \Stringable, UserIdentityInterface
 
     #[ORM\ManyToOne(targetEntity: UserInterface::class, cascade: ['persist'])]
     #[ORM\JoinColumn(onDelete: 'SET NULL')]
-    private ?UserInterface $bizUser = null;
+    private ?UserInterface $user = null;
 
     #[CreateIpColumn]
     #[ORM\Column(length: 128, nullable: true, options: ['comment' => '创建时IP'])]
@@ -345,21 +345,21 @@ class User implements \Stringable, UserIdentityInterface
         return $this;
     }
 
-    public function getBizUser(): ?UserInterface
+    public function getUser(): ?UserInterface
     {
-        return $this->bizUser;
+        return $this->user;
     }
 
-    public function setBizUser(?UserInterface $bizUser): self
+    public function setUser(?UserInterface $user): self
     {
-        $this->bizUser = $bizUser;
+        $this->user = $user;
 
         return $this;
     }
 
     public function getBelongUser(): ?UserInterface
     {
-        return $this->getBizUser();
+        return $this->getUser();
     }
 
     public function getIdentityValue(): string

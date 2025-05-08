@@ -31,14 +31,14 @@ class UserRepository extends ServiceEntityRepository
     /**
      * 查找指定系统用户相关的微信小程序用户
      */
-    public function getByBizUser(BizUser $bizUser): ?User
+    public function getBySysUser(UserInterface $sysUser): ?User
     {
-        $user = $this->findOneBy(['bizUser' => $bizUser]);
+        $user = $this->findOneBy(['user' => $sysUser]);
         if (!$user) {
-            $user = $this->findOneBy(['openId' => $bizUser->getUserIdentifier()]);
+            $user = $this->findOneBy(['openId' => $sysUser->getUserIdentifier()]);
         }
         if (!$user) {
-            $user = $this->findOneBy(['unionId' => $bizUser->getUserIdentifier()]);
+            $user = $this->findOneBy(['unionId' => $sysUser->getUserIdentifier()]);
         }
 
         return $user;
@@ -75,9 +75,9 @@ class UserRepository extends ServiceEntityRepository
     /**
      * 微信用户归微信用户，在实际开发中，我们实际存储的一般是最上层的User，所以此处会有一个转换和同步
      */
-    public function transformToBizUser(User $entity): BizUser
+    public function transformToSysUser(User $entity): UserInterface
     {
-        $bizUser = $entity->getBizUser();
+        $bizUser = $entity->getUser();
         if ($bizUser) {
             return $bizUser;
         }

@@ -40,7 +40,7 @@ class UploadUserPhone extends LockableProcedure
 
     public function execute(): array
     {
-        $user = $this->userRepository->getByBizUser($this->security->getUser());
+        $user = $this->userRepository->getBySysUser($this->security->getUser());
         if (!$user) {
             throw new ApiException('找不到微信小程序用户信息');
         }
