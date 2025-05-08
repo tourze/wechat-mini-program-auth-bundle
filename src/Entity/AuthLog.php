@@ -4,7 +4,6 @@ namespace WechatMiniProgramAuthBundle\Entity;
 
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Serializer\Attribute\Groups;
 use Tourze\DoctrineIndexedBundle\Attribute\IndexColumn;
 use Tourze\DoctrineIpBundle\Attribute\CreateIpColumn;
 use Tourze\DoctrineTimestampBundle\Attribute\CreateTimeColumn;
@@ -47,7 +46,6 @@ class AuthLog
     private ?string $createdFromIp = null;
 
     #[CreatedByColumn]
-    #[Groups(['restful_read'])]
     #[ORM\Column(nullable: true, options: ['comment' => '创建人'])]
     private ?string $createdBy = null;
 
@@ -56,7 +54,6 @@ class AuthLog
     #[ListColumn(order: 98, sorter: true)]
     #[ExportColumn]
     #[CreateTimeColumn]
-    #[Groups(['restful_read', 'admin_curd', 'restful_read'])]
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true, options: ['comment' => '创建时间'])]
     private ?\DateTimeInterface $createTime = null;
 
