@@ -10,6 +10,7 @@ use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Tourze\UserIDBundle\Model\SystemUser;
 use WechatMiniProgramAuthBundle\Entity\User;
+use WechatMiniProgramBundle\WechatMiniProgramBundle;
 
 /**
  * @method User|null find($id, $lockMode = null, $lockVersion = null)
