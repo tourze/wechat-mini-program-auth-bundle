@@ -3,6 +3,7 @@
 namespace WechatMiniProgramAuthBundle\Procedure;
 
 use Doctrine\ORM\EntityManagerInterface;
+use Monolog\Attribute\WithMonologChannel;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
@@ -28,6 +29,7 @@ use Yiisoft\Json\Json;
 #[MethodExpose('ChangeWechatMiniProgramPhoneNumber')]
 #[IsGranted('IS_AUTHENTICATED_FULLY')]
 #[Log]
+#[WithMonologChannel('procedure')]
 class ChangeWechatMiniProgramPhoneNumber extends LockableProcedure
 {
     #[MethodParam('当前sessionKey')]
@@ -45,7 +47,7 @@ class ChangeWechatMiniProgramPhoneNumber extends LockableProcedure
         private readonly EncryptService $encryptService,
         private readonly EventDispatcherInterface $eventDispatcher,
         private readonly Security $security,
-        private readonly LoggerInterface $procedureLogger,
+        private readonly LoggerInterface $logger,
         private readonly EntityManagerInterface $entityManager,
     ) {
     }
@@ -63,11 +65,11 @@ class ChangeWechatMiniProgramPhoneNumber extends LockableProcedure
         try {
             // 旧的获取手机号码方式 https://developers.weixin.qq.com/miniprogram/dev/framework/open-ability/deprecatedGetPhoneNumber.html
             $res = $this->encryptService->decryptData($this->sessionKey, $this->iv, $this->encryptedData);
-            $this->procedureLogger->debug('旧方式解密手机数据', [
+            $this->logger->debug('旧方式解密手机数据', [
                 'res' => $res,
             ]);
         } catch (DecryptException $exception) {
-            $this->procedureLogger->error('旧方式解密手机失败', [
+            $this->logger->error('旧方式解密手机失败', [
                 'exception' => $exception,
                 'sessionKey' => $this->sessionKey,
                 'iv' => $this->iv,

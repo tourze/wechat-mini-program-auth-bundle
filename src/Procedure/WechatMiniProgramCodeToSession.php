@@ -10,6 +10,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use GuzzleHttp\Exception\ConnectException;
 use HttpClientBundle\Exception\HttpClientException;
 use JWTAuthenticationBundle\TokenManager\JWTTokenManagerInterface;
+use Monolog\Attribute\WithMonologChannel;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpClient\Exception\TimeoutException;
@@ -45,6 +46,7 @@ use Yiisoft\Json\Json;
 #[MethodTag('微信小程序')]
 #[MethodExpose('WechatMiniProgramCodeToSession')]
 #[Log]
+#[WithMonologChannel('procedure')]
 class WechatMiniProgramCodeToSession extends LockableProcedure
 {
     use LaunchOptionsAware;
@@ -76,7 +78,7 @@ class WechatMiniProgramCodeToSession extends LockableProcedure
         private readonly RequestStack $requestStack,
         private readonly LoginService $loginService,
         private readonly Security $security,
-        private readonly LoggerInterface $procedureLogger,
+        private readonly LoggerInterface $logger,
     ) {
     }
 
@@ -256,7 +258,7 @@ class WechatMiniProgramCodeToSession extends LockableProcedure
             $this->entityManager->persist($bizUser);
             $this->entityManager->flush();
         } catch (UniqueConstraintViolationException $exception) {
-            $this->procedureLogger->error('遇到了索引冲突报错：' . $exception->getMessage(), [
+            $this->logger->error('遇到了索引冲突报错：' . $exception->getMessage(), [
                 'exception' => $exception,
                 'bizUser' => $bizUser,
                 'wechatUser' => $wechatUser,

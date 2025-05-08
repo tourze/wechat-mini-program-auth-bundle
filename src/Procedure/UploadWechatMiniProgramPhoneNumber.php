@@ -3,6 +3,7 @@
 namespace WechatMiniProgramAuthBundle\Procedure;
 
 use Doctrine\ORM\EntityManagerInterface;
+use Monolog\Attribute\WithMonologChannel;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
@@ -35,6 +36,7 @@ use Yiisoft\Json\Json;
 #[IsGranted('IS_AUTHENTICATED_FULLY')]
 #[Log]
 #[MethodExpose('UploadWechatMiniProgramPhoneNumber')]
+#[WithMonologChannel('procedure')]
 class UploadWechatMiniProgramPhoneNumber extends LockableProcedure implements LogFormatProcedure
 {
     use LaunchOptionsAware;
@@ -51,7 +53,7 @@ class UploadWechatMiniProgramPhoneNumber extends LockableProcedure implements Lo
         private readonly Client $client,
         private readonly EventDispatcherInterface $eventDispatcher,
         private readonly Security $security,
-        private readonly LoggerInterface $procedureLogger,
+        private readonly LoggerInterface $logger,
         private readonly EntityManagerInterface $entityManager,
     ) {
     }
@@ -74,7 +76,7 @@ class UploadWechatMiniProgramPhoneNumber extends LockableProcedure implements Lo
         $request->setAccount($wechatUser->getAccount());
         $request->setCode($this->code);
         $res = $this->client->request($request);
-        $this->procedureLogger->debug('远程获取微信手机号码信息', $res);
+        $this->logger->debug('远程获取微信手机号码信息', $res);
         if (!isset($res['phone_info'])) {
             throw new ApiException('找不到手机号码信息');
         }

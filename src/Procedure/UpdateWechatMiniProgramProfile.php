@@ -4,6 +4,7 @@ namespace WechatMiniProgramAuthBundle\Procedure;
 
 use Doctrine\ORM\EntityManagerInterface;
 use GuzzleHttp\Exception\ConnectException;
+use Monolog\Attribute\WithMonologChannel;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
@@ -39,6 +40,7 @@ use Yiisoft\Json\Json;
 #[IsGranted('IS_AUTHENTICATED_FULLY')]
 #[Log]
 #[MethodExpose('UpdateWechatMiniProgramProfile')]
+#[WithMonologChannel('procedure')]
 class UpdateWechatMiniProgramProfile extends LockableProcedure implements LogFormatProcedure
 {
     #[MethodParam('AppID')]
@@ -62,7 +64,7 @@ class UpdateWechatMiniProgramProfile extends LockableProcedure implements LogFor
         private readonly EncryptService $encryptService,
         private readonly CodeSessionLogRepository $codeSessionLogRepository,
         private readonly RequestStack $requestStack,
-        private readonly LoggerInterface $procedureLogger,
+        private readonly LoggerInterface $logger,
         private readonly UserRepository $userRepository,
         private readonly EntityManagerInterface $entityManager,
     ) {
@@ -114,7 +116,7 @@ class UpdateWechatMiniProgramProfile extends LockableProcedure implements LogFor
             throw new ApiException('微信数据异常，请重试', 0, [], $exception);
         }
 
-        $this->procedureLogger->info('解密获得微信用户UserProfile', $data);
+        $this->logger->info('解密获得微信用户UserProfile', $data);
 
         // 更新微信用户
         $user = $this->userRepository->findOneBy([
