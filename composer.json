@@ -5,6 +5,7 @@
   "license": "MIT",
   "require": {
     "php": "^8.1",
+    "ext-mbstring": "*",
     "doctrine/collections": "^2.3",
     "doctrine/dbal": "^4.0",
     "doctrine/doctrine-bundle": "^2.13",
@@ -37,6 +38,7 @@
     "tourze/json-rpc-lock-bundle": "0.1.*",
     "tourze/json-rpc-log-bundle": "0.1.*",
     "tourze/lock-service-bundle": "0.0.*",
+    "tourze/login-protect-bundle": "0.1.*",
     "tourze/symfony-schedule-entity-clean-bundle": "0.1.*",
     "tourze/text-manage-bundle": "0.0.*",
     "tourze/user-event-bundle": "~0.0.3",

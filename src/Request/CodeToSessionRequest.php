@@ -91,6 +91,6 @@ class CodeToSessionRequest extends ApiRequest implements CacheRequest
 
     public function getCacheDuration(): int
     {
-        return HOUR_IN_SECONDS;
+        return 60 * 60;
     }
 }
