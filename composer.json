@@ -34,11 +34,11 @@
     "tourze/json-rpc-core": "^0.0.6",
     "tourze/json-rpc-lock-bundle": "0.1.*",
     "tourze/lock-service-bundle": "0.0.*",
-    "tourze/symfony-ecol-bundle": "0.1.*",
     "tourze/symfony-schedule-entity-clean-bundle": "0.1.*",
     "tourze/user-id-bundle": "0.1.*",
     "tourze/wechat-mini-program-bundle": "0.1.*",
-    "yiisoft/json": "^1.0"
+    "yiisoft/json": "^1.0",
+    "tourze/text-manage-bundle": "0.0.*"
   },
   "require-dev": {
     "phpstan/phpstan": "^2.1",
