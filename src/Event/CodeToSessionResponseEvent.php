@@ -2,7 +2,7 @@
 
 namespace WechatMiniProgramAuthBundle\Event;
 
-use AppBundle\Entity\BizUser;
+use Symfony\Component\Security\Core\User\UserInterface;
 use Tourze\UserEventBundle\Event\UserInteractionContext;
 use Tourze\UserEventBundle\Event\UserInteractionEvent;
 use WechatMiniProgramAuthBundle\Entity\CodeSessionLog;
@@ -33,9 +33,9 @@ class CodeToSessionResponseEvent extends UserInteractionEvent implements UserInt
     private CodeSessionLog $codeSessionLog;
 
     /**
-     * @var BizUser TODO 貌似跟 sender 重复了，考虑下要不要删除
+     * @var UserInterface TODO 貌似跟 sender 重复了，考虑下要不要删除
      */
-    private BizUser $bizUser;
+    private UserInterface $bizUser;
 
     private User $wechatUser;
 
@@ -49,12 +49,12 @@ class CodeToSessionResponseEvent extends UserInteractionEvent implements UserInt
         $this->codeSessionLog = $codeSessionLog;
     }
 
-    public function getBizUser(): BizUser
+    public function getBizUser(): UserInterface
     {
         return $this->bizUser;
     }
 
-    public function setBizUser(BizUser $bizUser): void
+    public function setBizUser(UserInterface $bizUser): void
     {
         $this->bizUser = $bizUser;
     }
