@@ -2,7 +2,7 @@
 
 namespace WechatMiniProgramAuthBundle\Repository;
 
-use AppBundle\Entity\BizUser;
+use BizUserBundle\Entity\BizUser;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
