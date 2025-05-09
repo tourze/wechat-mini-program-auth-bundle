@@ -424,4 +424,9 @@ class User implements \Stringable, IdentityInterface
     {
         return $this->updateTime;
     }
+
+    public function getAccounts(): array
+    {
+        return [];
+    }
 }
