@@ -12,6 +12,7 @@ use HttpClientBundle\Exception\HttpClientException;
 use JWTAuthenticationBundle\TokenManager\JWTTokenManagerInterface;
 use Monolog\Attribute\WithMonologChannel;
 use Psr\Log\LoggerInterface;
+use Symfony\Bridge\Doctrine\Security\User\UserLoaderInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpClient\Exception\TimeoutException;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -74,6 +75,7 @@ class WechatMiniProgramCodeToSession extends LockableProcedure
         private readonly EventDispatcherInterface $eventDispatcher,
         private readonly UserRepository $userRepository,
         private readonly BizUserRepository $bizUserRepository,
+        private readonly UserLoaderInterface $userLoader,
         private readonly JWTTokenManagerInterface $jwtManager,
         private readonly RequestStack $requestStack,
         private readonly LoginService $loginService,
@@ -222,7 +224,7 @@ class WechatMiniProgramCodeToSession extends LockableProcedure
     protected function checkUser(User $wechatUser, &$result, &$isNewUser, &$bizUser)
     {
         // 检查系统用户表是否也有记录了
-        $bizUser = $this->bizUserRepository->findOneBy(['username' => $wechatUser->getOpenId()]);
+        $bizUser = $this->userLoader->loadUserByIdentifier($wechatUser->getOpenId());
         // 按照微信的说法，"目前小程序开发者可以通过 wx.login 接口直接获取用户的 openId 与 unionId 信息，实现微信身份登录"
         // 我们在后续的使用过程中无法直接拿到用户数据，那么就只能在这里就生成一个用户数据了。。
 

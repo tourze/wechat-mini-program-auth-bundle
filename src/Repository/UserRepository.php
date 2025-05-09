@@ -3,10 +3,10 @@
 namespace WechatMiniProgramAuthBundle\Repository;
 
 use AppBundle\Entity\BizUser;
-use AppBundle\Repository\BizUserRepository;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Bridge\Doctrine\Security\User\UserLoaderInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Tourze\UserIDBundle\Model\SystemUser;
 use WechatMiniProgramAuthBundle\Entity\User;
@@ -22,7 +22,7 @@ class UserRepository extends ServiceEntityRepository
 {
     public function __construct(
         ManagerRegistry $registry,
-        private readonly BizUserRepository $bizUserRepository,
+        private readonly UserLoaderInterface $userLoader,
         private readonly EntityManagerInterface $entityManager,
     ) {
         parent::__construct($registry, User::class);
@@ -81,9 +81,7 @@ class UserRepository extends ServiceEntityRepository
         if ($bizUser) {
             return $bizUser;
         }
-        $bizUser = $this->bizUserRepository->findOneBy([
-            'username' => $entity->getOpenId(),
-        ]);
+        $bizUser = $this->userLoader->loadUserByIdentifier($entity->getOpenId());
         if (!$bizUser) {
             $bizUser = new BizUser();
             $bizUser->setUsername($entity->getOpenId());
