@@ -2,19 +2,17 @@
 
 namespace WechatMiniProgramAuthBundle\Procedure;
 
-use AppBundle\Entity\BizUser;
-use AppBundle\Repository\BizUserRepository;
+use AccessTokenBundle\Service\AccessTokenService;
+use BizUserBundle\Entity\BizUser;
+use BizUserBundle\Repository\BizUserRepository;
 use Carbon\Carbon;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
-use GuzzleHttp\Exception\ConnectException;
 use HttpClientBundle\Exception\HttpClientException;
-use JWTAuthenticationBundle\TokenManager\JWTTokenManagerInterface;
 use Monolog\Attribute\WithMonologChannel;
 use Psr\Log\LoggerInterface;
 use Symfony\Bridge\Doctrine\Security\User\UserLoaderInterface;
 use Symfony\Bundle\SecurityBundle\Security;
-use Symfony\Component\HttpClient\Exception\TimeoutException;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
@@ -76,7 +74,7 @@ class WechatMiniProgramCodeToSession extends LockableProcedure
         private readonly UserRepository $userRepository,
         private readonly BizUserRepository $bizUserRepository,
         private readonly UserLoaderInterface $userLoader,
-        private readonly JWTTokenManagerInterface $jwtManager,
+        private readonly AccessTokenService $accessTokenService,
         private readonly RequestStack $requestStack,
         private readonly LoginService $loginService,
         private readonly Security $security,
@@ -98,8 +96,6 @@ class WechatMiniProgramCodeToSession extends LockableProcedure
 
         try {
             $session = $this->client->request($request);
-        } catch (ConnectException|TimeoutException $exception) {
-            throw new ApiException('微信接口超时，请稍后重试', 0, [], $exception);
         } catch (HttpClientException $exception) {
             // invalid code, rid: 64c8b2ae-2d255da6-372e4494
             if (str_contains($exception->getMessage(), 'invalid code, rid')) {
@@ -165,6 +161,7 @@ class WechatMiniProgramCodeToSession extends LockableProcedure
             $wechatUser->setUnionId($log->getUnionId());
         }
         $wechatUser = $this->upsertManager->upsert($wechatUser);
+        \assert($wechatUser instanceof User);
 
         $bizUser = null;
         $isNewUser = false;
@@ -173,7 +170,7 @@ class WechatMiniProgramCodeToSession extends LockableProcedure
 
         // 既然每次都是这个鬼样，那么用户就不用再提供啥刷新信息的机制了
         $result['user'] = $bizUser->retrieveApiArray();
-        $result['jwt'] = $this->jwtManager->create($bizUser);
+        $result['jwt'] = $this->accessTokenService->createToken($bizUser);
 
         // 补充返回手机号码信息
         $result['phoneNumbers'] = [];

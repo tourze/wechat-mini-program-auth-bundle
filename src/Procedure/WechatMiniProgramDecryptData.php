@@ -3,7 +3,6 @@
 namespace WechatMiniProgramAuthBundle\Procedure;
 
 use Doctrine\ORM\EntityManagerInterface;
-use GuzzleHttp\Exception\ConnectException;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Tourze\JsonRPC\Core\Attribute\MethodDoc;
 use Tourze\JsonRPC\Core\Attribute\MethodParam;
@@ -65,11 +64,7 @@ class WechatMiniProgramDecryptData extends LockableProcedure
             $request->setSecret($account->getAppSecret());
             $request->setJsCode($this->code);
 
-            try {
-                $session = $this->client->request($request);
-            } catch (ConnectException $exception) {
-                throw new ApiException('微信接口超时，请稍后重试', previous: $exception);
-            }
+            $session = $this->client->request($request);
 
             if (!isset($session['session_key'])) {
                 throw new ApiException('微信登录失败，请重新进入小程序');
