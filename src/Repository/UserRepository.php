@@ -4,12 +4,14 @@ namespace WechatMiniProgramAuthBundle\Repository;
 
 use BizUserBundle\Entity\BizUser;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bridge\Doctrine\Security\User\UserLoaderInterface;
 use Symfony\Component\DependencyInjection\Attribute\AsAlias;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Tourze\LockServiceBundle\Service\LockService;
 use Tourze\UserIDBundle\Model\SystemUser;
+use Tourze\WechatMiniProgramAppIDContracts\MiniProgramInterface;
+use Tourze\WechatMiniProgramUserContracts\UserInterface as WechatMiniProgramUserInterface;
 use Tourze\WechatMiniProgramUserContracts\UserLoaderInterface as WechatMiniProgramUserLoaderInterface;
 use WechatMiniProgramAuthBundle\Entity\User;
 use WechatMiniProgramBundle\WechatMiniProgramBundle;
@@ -26,7 +28,7 @@ class UserRepository extends ServiceEntityRepository implements WechatMiniProgra
     public function __construct(
         ManagerRegistry $registry,
         private readonly UserLoaderInterface $userLoader,
-        private readonly EntityManagerInterface $entityManager,
+        private readonly LockService $lockService,
     ) {
         parent::__construct($registry, User::class);
     }
@@ -110,19 +112,39 @@ class UserRepository extends ServiceEntityRepository implements WechatMiniProgra
             $bizUser->setAvatar(WechatMiniProgramBundle::DEFAULT_AVATAR);
         }
 
-        $this->entityManager->persist($bizUser);
-        $this->entityManager->flush();
+        $this->getEntityManager()->persist($bizUser);
+        $this->getEntityManager()->flush();
 
         return $bizUser;
     }
 
-    public function loadUserByOpenId(string $openId): ?\Tourze\WechatMiniProgramUserContracts\UserInterface
+    public function loadUserByOpenId(string $openId): ?WechatMiniProgramUserInterface
     {
         return $this->findOneBy(['openId' => $openId]);
     }
 
-    public function loadUserByUnionId(string $unionId): ?\Tourze\WechatMiniProgramUserContracts\UserInterface
+    public function loadUserByUnionId(string $unionId): ?WechatMiniProgramUserInterface
     {
         return $this->findOneBy(['unionId' => $unionId]);
+    }
+
+    public function createUser(MiniProgramInterface $miniProgram, string $openId, ?string $unionId = null): WechatMiniProgramUserInterface
+    {
+        $lock = $this->lockService->acquireLock("wechat-mini-program-auth-bundle_user_$openId");
+
+        try {
+            $user = $this->loadUserByOpenId($openId);
+            if (!$user) {
+                $user = new User();
+                $user->setAccount($miniProgram);
+                $user->setOpenId($openId);
+                $user->setUnionId($unionId);
+                $this->getEntityManager()->persist($user);
+                $this->getEntityManager()->flush();
+            }
+            return $user;
+        } finally {
+            $lock->release();
+        }
     }
 }
