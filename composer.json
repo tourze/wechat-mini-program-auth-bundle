@@ -32,6 +32,7 @@
     "tourze/biz-user-bundle": "0.0.*",
     "tourze/doctrine-indexed-bundle": "0.0.*",
     "tourze/doctrine-ip-bundle": "0.0.*",
+    "tourze/doctrine-resolve-target-entity-bundle": "0.0.*",
     "tourze/doctrine-timestamp-bundle": "0.0.*",
     "tourze/doctrine-upsert-bundle": "0.1.*",
     "tourze/doctrine-user-bundle": "0.0.*",
@@ -50,7 +51,9 @@
     "tourze/user-event-bundle": "~0.0.3",
     "tourze/user-id-bundle": "0.1.*",
     "tourze/wechat-helper": "0.0.*",
+    "tourze/wechat-mini-program-appid-contracts": "0.0.*",
     "tourze/wechat-mini-program-bundle": "0.1.*",
+    "tourze/wechat-mini-program-user-contracts": "0.0.*",
     "yiisoft/json": "^1.0"
   },
   "require-dev": {

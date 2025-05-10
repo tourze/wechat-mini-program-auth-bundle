@@ -3,8 +3,8 @@
 namespace WechatMiniProgramAuthBundle\Event;
 
 use Tourze\UserEventBundle\Event\UserInteractionEvent;
+use Tourze\WechatMiniProgramUserContracts\UserInterface;
 use WechatMiniProgramAuthBundle\Entity\PhoneNumber;
-use WechatMiniProgramAuthBundle\Entity\User;
 use WechatMiniProgramBundle\Event\LaunchOptionsAware;
 
 class ChangePhoneNumberEvent extends UserInteractionEvent
@@ -25,7 +25,7 @@ class ChangePhoneNumberEvent extends UserInteractionEvent
 
     private PhoneNumber $phoneNumber;
 
-    private User $wechatUser;
+    private UserInterface $wechatUser;
 
     public function getPhoneNumber(): PhoneNumber
     {
@@ -37,12 +37,12 @@ class ChangePhoneNumberEvent extends UserInteractionEvent
         $this->phoneNumber = $phoneNumber;
     }
 
-    public function getWechatUser(): User
+    public function getWechatUser(): UserInterface
     {
         return $this->wechatUser;
     }
 
-    public function setWechatUser(User $wechatUser): void
+    public function setWechatUser(UserInterface $wechatUser): void
     {
         $this->wechatUser = $wechatUser;
     }

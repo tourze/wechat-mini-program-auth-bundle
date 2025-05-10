@@ -6,7 +6,6 @@ use Symfony\Component\Security\Core\User\UserInterface;
 use Tourze\UserEventBundle\Event\UserInteractionContext;
 use Tourze\UserEventBundle\Event\UserInteractionEvent;
 use WechatMiniProgramAuthBundle\Entity\CodeSessionLog;
-use WechatMiniProgramAuthBundle\Entity\User;
 use WechatMiniProgramBundle\Event\LaunchOptionsAware;
 
 class CodeToSessionResponseEvent extends UserInteractionEvent implements UserInteractionContext
@@ -37,7 +36,7 @@ class CodeToSessionResponseEvent extends UserInteractionEvent implements UserInt
      */
     private UserInterface $bizUser;
 
-    private User $wechatUser;
+    private \Tourze\WechatMiniProgramUserContracts\UserInterface $wechatUser;
 
     public function getCodeSessionLog(): CodeSessionLog
     {
@@ -59,12 +58,12 @@ class CodeToSessionResponseEvent extends UserInteractionEvent implements UserInt
         $this->bizUser = $bizUser;
     }
 
-    public function getWechatUser(): User
+    public function getWechatUser(): \Tourze\WechatMiniProgramUserContracts\UserInterface
     {
         return $this->wechatUser;
     }
 
-    public function setWechatUser(User $wechatUser): void
+    public function setWechatUser(\Tourze\WechatMiniProgramUserContracts\UserInterface $wechatUser): void
     {
         $this->wechatUser = $wechatUser;
     }

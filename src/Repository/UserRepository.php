@@ -7,8 +7,10 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bridge\Doctrine\Security\User\UserLoaderInterface;
+use Symfony\Component\DependencyInjection\Attribute\AsAlias;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Tourze\UserIDBundle\Model\SystemUser;
+use Tourze\WechatMiniProgramUserContracts\UserLoaderInterface as WechatMiniProgramUserLoaderInterface;
 use WechatMiniProgramAuthBundle\Entity\User;
 use WechatMiniProgramBundle\WechatMiniProgramBundle;
 
@@ -18,7 +20,8 @@ use WechatMiniProgramBundle\WechatMiniProgramBundle;
  * @method User[]    findAll()
  * @method User[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
-class UserRepository extends ServiceEntityRepository
+#[AsAlias(id: WechatMiniProgramUserLoaderInterface::class)]
+class UserRepository extends ServiceEntityRepository implements WechatMiniProgramUserLoaderInterface
 {
     public function __construct(
         ManagerRegistry $registry,
@@ -111,5 +114,15 @@ class UserRepository extends ServiceEntityRepository
         $this->entityManager->flush();
 
         return $bizUser;
+    }
+
+    public function loadUserByOpenId(string $openId): ?\Tourze\WechatMiniProgramUserContracts\UserInterface
+    {
+        return $this->findOneBy(['openId' => $openId]);
+    }
+
+    public function loadUserByUnionId(string $unionId): ?\Tourze\WechatMiniProgramUserContracts\UserInterface
+    {
+        return $this->findOneBy(['unionId' => $unionId]);
     }
 }

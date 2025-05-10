@@ -23,6 +23,7 @@ use Tourze\EasyAdmin\Attribute\Filter\Keyword;
 use Tourze\EasyAdmin\Attribute\Permission\AsPermission;
 use Tourze\UserIDBundle\Contracts\IdentityInterface;
 use Tourze\UserIDBundle\Model\Identity;
+use Tourze\WechatMiniProgramAppIDContracts\MiniProgramInterface;
 use WechatMiniProgramAuthBundle\Enum\Gender;
 use WechatMiniProgramAuthBundle\Enum\Language;
 use WechatMiniProgramAuthBundle\Repository\UserRepository;
@@ -41,7 +42,7 @@ use WechatMiniProgramBundle\Entity\Account;
 #[Deletable]
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: 'wechat_mini_program_user', options: ['comment' => '微信小程序用户'])]
-class User implements \Stringable, IdentityInterface
+class User implements \Stringable, IdentityInterface, \Tourze\WechatMiniProgramUserContracts\UserInterface
 {
     public const IDENTITY_PREFIX = 'wechat-mini-program-';
 
@@ -428,5 +429,10 @@ class User implements \Stringable, IdentityInterface
     public function getAccounts(): array
     {
         return [];
+    }
+
+    public function getMiniProgram(): MiniProgramInterface
+    {
+        return $this->getAccount();
     }
 }
