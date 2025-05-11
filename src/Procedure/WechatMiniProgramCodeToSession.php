@@ -206,7 +206,7 @@ class WechatMiniProgramCodeToSession extends LockableProcedure
         return $result;
     }
 
-    protected function getLockResource(JsonRpcParams $params): array
+    public function getLockResource(JsonRpcParams $params): ?array
     {
         return [
             'WechatMiniProgramCodeToSession' . $params->get('code'),
