@@ -16,11 +16,11 @@ use Tourze\JsonRPC\Core\Exception\ApiException;
 use Tourze\JsonRPCLockBundle\Procedure\LockableProcedure;
 use Tourze\JsonRPCLogBundle\Attribute\Log;
 use Tourze\UserIDBundle\Model\SystemUser;
+use Tourze\WechatMiniProgramUserContracts\UserLoaderInterface;
 use WechatMiniProgramAuthBundle\Entity\PhoneNumber;
 use WechatMiniProgramAuthBundle\Event\ChangePhoneNumberEvent;
 use WechatMiniProgramAuthBundle\Exception\DecryptException;
 use WechatMiniProgramAuthBundle\Repository\PhoneNumberRepository;
-use WechatMiniProgramAuthBundle\Repository\UserRepository;
 use WechatMiniProgramAuthBundle\Service\EncryptService;
 use Yiisoft\Json\Json;
 
@@ -42,7 +42,7 @@ class ChangeWechatMiniProgramPhoneNumber extends LockableProcedure
     public string $iv = '';
 
     public function __construct(
-        private readonly UserRepository $userRepository,
+        private readonly UserLoaderInterface $userLoader,
         private readonly PhoneNumberRepository $phoneNumberRepository,
         private readonly EncryptService $encryptService,
         private readonly EventDispatcherInterface $eventDispatcher,
@@ -55,9 +55,7 @@ class ChangeWechatMiniProgramPhoneNumber extends LockableProcedure
     public function execute(): array
     {
         $bizUser = $this->security->getUser();
-        $wechatUser = $this->userRepository->findOneBy([
-            'openId' => $bizUser->getUserIdentifier(),
-        ]);
+        $wechatUser = $this->userLoader->loadUserByOpenId($bizUser->getUserIdentifier());
         if (!$wechatUser) {
             throw new ApiException('找不到微信小程序用户信息');
         }

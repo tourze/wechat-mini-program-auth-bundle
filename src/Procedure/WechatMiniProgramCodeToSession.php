@@ -34,7 +34,6 @@ use WechatMiniProgramAuthBundle\Enum\Language;
 use WechatMiniProgramAuthBundle\Event\CodeToSessionRequestEvent;
 use WechatMiniProgramAuthBundle\Event\CodeToSessionResponseEvent;
 use WechatMiniProgramAuthBundle\Repository\CodeSessionLogRepository;
-use WechatMiniProgramAuthBundle\Repository\UserRepository;
 use WechatMiniProgramAuthBundle\Request\CodeToSessionRequest;
 use WechatMiniProgramBundle\Procedure\LaunchOptionsAware;
 use WechatMiniProgramBundle\Service\AccountService;
@@ -71,7 +70,6 @@ class WechatMiniProgramCodeToSession extends LockableProcedure
         private readonly UpsertManager $upsertManager,
         private readonly Client $client,
         private readonly EventDispatcherInterface $eventDispatcher,
-        private readonly UserRepository $userRepository,
         private readonly BizUserRepository $bizUserRepository,
         private readonly UserLoaderInterface $userLoader,
         private readonly AccessTokenService $accessTokenService,

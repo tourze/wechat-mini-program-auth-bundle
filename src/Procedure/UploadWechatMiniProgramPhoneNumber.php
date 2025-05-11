@@ -18,10 +18,10 @@ use Tourze\JsonRPCLockBundle\Procedure\LockableProcedure;
 use Tourze\JsonRPCLogBundle\Attribute\Log;
 use Tourze\JsonRPCLogBundle\Procedure\LogFormatProcedure;
 use Tourze\UserIDBundle\Model\SystemUser;
+use Tourze\WechatMiniProgramUserContracts\UserLoaderInterface;
 use WechatMiniProgramAuthBundle\Entity\PhoneNumber;
 use WechatMiniProgramAuthBundle\Event\GetPhoneNumberEvent;
 use WechatMiniProgramAuthBundle\Repository\PhoneNumberRepository;
-use WechatMiniProgramAuthBundle\Repository\UserRepository;
 use WechatMiniProgramAuthBundle\Request\GetUserPhoneNumberRequest;
 use WechatMiniProgramBundle\Procedure\LaunchOptionsAware;
 use WechatMiniProgramBundle\Service\Client;
@@ -48,7 +48,7 @@ class UploadWechatMiniProgramPhoneNumber extends LockableProcedure implements Lo
     public string $source = '';
 
     public function __construct(
-        private readonly UserRepository $userRepository,
+        private readonly UserLoaderInterface $userLoader,
         private readonly PhoneNumberRepository $phoneNumberRepository,
         private readonly Client $client,
         private readonly EventDispatcherInterface $eventDispatcher,
@@ -61,9 +61,7 @@ class UploadWechatMiniProgramPhoneNumber extends LockableProcedure implements Lo
     public function execute(): array
     {
         $bizUser = $this->security->getUser();
-        $wechatUser = $this->userRepository->findOneBy([
-            'openId' => $bizUser->getUserIdentifier(),
-        ]);
+        $wechatUser = $this->userLoader->loadUserByOpenId($bizUser->getUserIdentifier());
         if (!$wechatUser) {
             throw new ApiException('找不到微信小程序用户信息');
         }

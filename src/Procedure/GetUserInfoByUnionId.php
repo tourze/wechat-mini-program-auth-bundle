@@ -8,8 +8,8 @@ use Tourze\JsonRPC\Core\Attribute\MethodParam;
 use Tourze\JsonRPC\Core\Attribute\MethodTag;
 use Tourze\JsonRPC\Core\Exception\ApiException;
 use Tourze\JsonRPC\Core\Procedure\BaseProcedure;
+use Tourze\WechatMiniProgramUserContracts\UserLoaderInterface;
 use WechatMiniProgramAuthBundle\Repository\PhoneNumberRepository;
-use WechatMiniProgramAuthBundle\Repository\UserRepository;
 
 #[MethodTag('微信小程序')]
 #[MethodDoc('通过unionId获取用户信息')]
@@ -20,7 +20,7 @@ class GetUserInfoByUnionId extends BaseProcedure
     public string $unionId = '';
 
     public function __construct(
-        private readonly UserRepository $userRepository,
+        private readonly UserLoaderInterface $userLoader,
         private readonly PhoneNumberRepository $phoneNumberRepository,
     ) {
     }
@@ -31,10 +31,7 @@ class GetUserInfoByUnionId extends BaseProcedure
             throw new ApiException('请求参数不正确');
         }
 
-        $user = $this->userRepository->findOneBy([
-            'unionId' => $this->unionId,
-        ]);
-
+        $user = $this->userLoader->loadUserByUnionId($this->unionId);
         if (!$user) {
             return [];
         }
