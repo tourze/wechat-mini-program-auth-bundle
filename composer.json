@@ -45,7 +45,7 @@
     "tourze/json-rpc-endpoint-bundle": "0.1.*",
     "tourze/json-rpc-lock-bundle": "0.1.*",
     "tourze/json-rpc-log-bundle": "0.1.*",
-    "tourze/lock-service-bundle": "0.0.*",
+    "tourze/lock-service-bundle": "0.1.*",
     "tourze/login-protect-bundle": "0.1.*",
     "tourze/symfony-schedule-entity-clean-bundle": "0.1.*",
     "tourze/text-manage-bundle": "0.0.*",
