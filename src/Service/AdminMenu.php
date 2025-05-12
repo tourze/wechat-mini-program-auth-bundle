@@ -1,6 +1,6 @@
 <?php
 
-namespace WechatMiniProgramAuthBundle;
+namespace WechatMiniProgramAuthBundle\Service;
 
 use Knp\Menu\ItemInterface;
 use Tourze\EasyAdminMenuBundle\Service\LinkGeneratorInterface;
