@@ -49,7 +49,7 @@
     "tourze/login-protect-bundle": "0.1.*",
     "tourze/symfony-schedule-entity-clean-bundle": "0.1.*",
     "tourze/text-manage-bundle": "0.0.*",
-    "tourze/user-event-bundle": "~0.0.3",
+    "tourze/user-event-bundle": "0.0.*",
     "tourze/user-id-bundle": "0.1.*",
     "tourze/wechat-helper": "0.0.*",
     "tourze/wechat-mini-program-appid-contracts": "0.0.*",
