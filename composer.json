@@ -41,7 +41,7 @@
     "tourze/easy-admin-menu-bundle": "0.1.*",
     "tourze/enum-extra": "0.1.*",
     "tourze/http-client-bundle": "0.1.*",
-    "tourze/json-rpc-core": "^0.0.6",
+    "tourze/json-rpc-core": "0.0.*",
     "tourze/json-rpc-endpoint-bundle": "0.1.*",
     "tourze/json-rpc-lock-bundle": "0.1.*",
     "tourze/json-rpc-log-bundle": "0.1.*",
