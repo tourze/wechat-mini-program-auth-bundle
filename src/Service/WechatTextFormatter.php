@@ -24,7 +24,7 @@ class WechatTextFormatter implements TextFormatter
         foreach ($params as $value) {
             if ($value instanceof UserInterface) {
                 $wechatUser = $this->userRepository->transformToWechatUser($value);
-                if (!$wechatUser) {
+                if ($wechatUser === null) {
                     continue;
                 }
 

@@ -138,7 +138,7 @@ class User implements \Stringable, IdentityInterface, \Tourze\WechatMiniProgramU
 
     public function __toString(): string
     {
-        if (!$this->getId()) {
+        if ($this->getId() === null) {
             return '';
         }
 
@@ -354,12 +354,13 @@ class User implements \Stringable, IdentityInterface, \Tourze\WechatMiniProgramU
 
     public function getIdentityArray(): \Traversable
     {
-        yield new Identity($this->getId(), $this->getIdentityType(), $this->getIdentityValue(), [
+        yield new Identity((string) $this->getId(), $this->getIdentityType(), $this->getIdentityValue(), [
             'createTime' => $this->getCreateTime()?->format('Y-m-d H:i:s'),
             'updateTime' => $this->getUpdateTime()?->format('Y-m-d H:i:s'),
         ]);
-        if ($this->getUnionId()) {
-            yield new Identity($this->getId(), 'wechat-unionid', $this->getUnionId(), [
+        $unionId = $this->getUnionId();
+        if ($unionId !== null) {
+            yield new Identity((string) $this->getId(), 'wechat-unionid', $unionId, [
                 'createTime' => $this->getCreateTime()?->format('Y-m-d H:i:s'),
                 'updateTime' => $this->getUpdateTime()?->format('Y-m-d H:i:s'),
             ]);

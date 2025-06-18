@@ -55,7 +55,7 @@ class EncryptServiceTest extends TestCase
                 // 使用的是重写后的decryptRaw方法，不依赖静态方法
                 $decrypted = $this->decryptRaw($sessionKey, $iv, $encrypted);
                 
-                if (!$decrypted) {
+                if ($decrypted === false || $decrypted === '') {
                     throw new DecryptException('Failed to decrypt data.');
                 }
                 
@@ -94,7 +94,7 @@ class EncryptServiceTest extends TestCase
             {
                 $decrypted = $this->decryptRaw($sessionKey, $iv, $encrypted);
                 
-                if (!$decrypted) {
+                if ($decrypted === false || $decrypted === '') {
                     throw new DecryptException('Failed to decrypt data.');
                 }
                 
@@ -130,7 +130,7 @@ class EncryptServiceTest extends TestCase
             {
                 $decrypted = $this->decryptRaw($sessionKey, $iv, $encrypted);
                 
-                if (!$decrypted) {
+                if ($decrypted === false || $decrypted === '') {
                     throw new DecryptException('Failed to decrypt data.');
                 }
                 

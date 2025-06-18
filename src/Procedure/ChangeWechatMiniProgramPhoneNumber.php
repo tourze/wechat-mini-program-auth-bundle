@@ -56,7 +56,7 @@ class ChangeWechatMiniProgramPhoneNumber extends LockableProcedure
     {
         $bizUser = $this->security->getUser();
         $wechatUser = $this->userLoader->loadUserByOpenId($bizUser->getUserIdentifier());
-        if (!$wechatUser) {
+        if ($wechatUser === null) {
             throw new ApiException('找不到微信小程序用户信息');
         }
 
@@ -80,7 +80,7 @@ class ChangeWechatMiniProgramPhoneNumber extends LockableProcedure
         $phoneNumber = $this->phoneNumberRepository->findOneBy([
             'phoneNumber' => $res['phoneNumber'],
         ]);
-        if (!$phoneNumber) {
+        if ($phoneNumber === null) {
             $phoneNumber = new PhoneNumber();
             $phoneNumber->setPhoneNumber($res['phoneNumber']);
         }
