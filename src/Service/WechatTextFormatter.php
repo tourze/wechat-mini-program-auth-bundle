@@ -22,7 +22,7 @@ class WechatTextFormatter implements TextFormatter
         $text = $this->inner->formatText($text, $params);
 
         foreach ($params as $value) {
-            if ($value instanceof UserInterface) {
+            if ((bool) $value instanceof UserInterface) {
                 $wechatUser = $this->userRepository->transformToWechatUser($value);
                 if ($wechatUser === null) {
                     continue;

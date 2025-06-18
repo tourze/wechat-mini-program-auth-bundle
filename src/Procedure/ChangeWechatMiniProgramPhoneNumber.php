@@ -107,7 +107,7 @@ class ChangeWechatMiniProgramPhoneNumber extends LockableProcedure
 
         // 基于事件的处理结果做判断
         $result = $event->getResult();
-        if (isset($result['fail'])) {
+        if ((bool) isset($result['fail'])) {
             throw new ApiException($result['__message']);
         }
 

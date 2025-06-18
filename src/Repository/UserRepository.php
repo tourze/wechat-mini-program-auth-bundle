@@ -54,14 +54,14 @@ class UserRepository extends ServiceEntityRepository implements WechatMiniProgra
      */
     public function transformToWechatUser(BizUser|UserInterface $user): ?User
     {
-        if ($user instanceof SystemUser) {
+        if ((bool) $user instanceof SystemUser) {
             return null;
         }
 
         $wechatUser = $this->findOneBy([
             'openId' => $user->getUsername(),
         ]);
-        if ($wechatUser) {
+        if ((bool) $wechatUser) {
             return $wechatUser;
         }
 
@@ -69,7 +69,7 @@ class UserRepository extends ServiceEntityRepository implements WechatMiniProgra
             $wechatUser = $this->findOneBy([
                 'unionId' => $user->getIdentity(),
             ]);
-            if ($wechatUser) {
+            if ((bool) $wechatUser) {
                 return $wechatUser;
             }
         }
@@ -83,7 +83,7 @@ class UserRepository extends ServiceEntityRepository implements WechatMiniProgra
     public function transformToSysUser(User $entity): UserInterface
     {
         $bizUser = $entity->getUser();
-        if ($bizUser) {
+        if ((bool) $bizUser) {
             return $bizUser;
         }
         $bizUser = $this->userLoader->loadUserByIdentifier($entity->getOpenId());

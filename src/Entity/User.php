@@ -12,13 +12,7 @@ use Tourze\DoctrineIndexedBundle\Attribute\IndexColumn;
 use Tourze\DoctrineIpBundle\Attribute\CreateIpColumn;
 use Tourze\DoctrineIpBundle\Attribute\UpdateIpColumn;
 use Tourze\DoctrineTimestampBundle\Traits\TimestampableAware;
-use Tourze\EasyAdmin\Attribute\Action\Deletable;
-use Tourze\EasyAdmin\Attribute\Column\ExportColumn;
-use Tourze\EasyAdmin\Attribute\Column\ListColumn;
 use Tourze\EasyAdmin\Attribute\Column\PictureColumn;
-use Tourze\EasyAdmin\Attribute\Field\FormField;
-use Tourze\EasyAdmin\Attribute\Filter\Keyword;
-use Tourze\EasyAdmin\Attribute\Permission\AsPermission;
 use Tourze\UserIDBundle\Contracts\IdentityInterface;
 use Tourze\UserIDBundle\Model\Identity;
 use Tourze\WechatMiniProgramAppIDContracts\MiniProgramInterface;
@@ -36,8 +30,6 @@ use WechatMiniProgramBundle\Entity\Account;
  * 目前微信体系中，用户信息并不总是能返回完整的了，我们需要根据实际，调用其他接口来补充信息。
  * 参考 https://developers.weixin.qq.com/community/develop/doc/00028edbe3c58081e7cc834705b801
  */
-#[AsPermission(title: '微信小程序用户')]
-#[Deletable]
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: 'wechat_mini_program_user', options: ['comment' => '微信小程序用户'])]
 class User implements \Stringable, IdentityInterface, \Tourze\WechatMiniProgramUserContracts\UserInterface
@@ -45,35 +37,20 @@ class User implements \Stringable, IdentityInterface, \Tourze\WechatMiniProgramU
     use TimestampableAware;
     public const IDENTITY_PREFIX = 'wechat-mini-program-';
 
-    #[ListColumn(order: -1)]
-    #[ExportColumn]
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: Types::INTEGER, options: ['comment' => 'ID'])]
     private ?int $id = 0;
 
-    #[ListColumn(title: '所属账号')]
     #[ORM\ManyToOne(targetEntity: Account::class)]
     #[ORM\JoinColumn(onDelete: 'SET NULL')]
     private ?Account $account = null;
 
-    #[FormField]
-    #[Keyword]
-    #[ListColumn]
-    #[ORM\Column(type: Types::STRING, length: 255, unique: true, options: ['comment' => 'OpenID'])]
     private string $openId;
 
     #[IndexColumn]
-    #[FormField]
-    #[Keyword]
-    #[ListColumn]
-    #[ORM\Column(type: Types::STRING, length: 255, nullable: true, options: ['comment' => 'UnionID'])]
     private ?string $unionId = null;
 
-    #[FormField]
-    #[Keyword]
-    #[ListColumn]
-    #[ORM\Column(type: Types::STRING, length: 100, nullable: true, options: ['comment' => '昵称'])]
     private ?string $nickName = null;
 
     /**
@@ -83,9 +60,6 @@ class User implements \Stringable, IdentityInterface, \Tourze\WechatMiniProgramU
      * 若用户更换头像，原有头像 URL 将失效。
      */
     #[PictureColumn]
-    #[FormField]
-    #[ListColumn]
-    #[ORM\Column(type: Types::STRING, length: 255, nullable: true, options: ['comment' => '头像地址'])]
     private ?string $avatarUrl = null;
 
     #[ORM\Column(type: Types::INTEGER, nullable: true, enumType: Gender::class, options: ['comment' => '性别'])]
@@ -100,12 +74,8 @@ class User implements \Stringable, IdentityInterface, \Tourze\WechatMiniProgramU
     #[ORM\Column(type: Types::STRING, length: 100, nullable: true, options: ['comment' => '地区'])]
     private ?string $city = null;
 
-    #[FormField]
-    #[ListColumn]
-    #[ORM\Column(type: Types::STRING, length: 10, enumType: Language::class, options: ['default' => 'zh_CN', 'comment' => '语言'])]
     private Language $language;
 
-    #[FormField]
     #[ORM\Column(type: Types::TEXT, nullable: true, options: ['comment' => '原始数据'])]
     private ?string $rawData = null;
 
@@ -124,11 +94,9 @@ class User implements \Stringable, IdentityInterface, \Tourze\WechatMiniProgramU
     private ?UserInterface $user = null;
 
     #[CreateIpColumn]
-    #[ORM\Column(length: 128, nullable: true, options: ['comment' => '创建时IP'])]
     private ?string $createdFromIp = null;
 
     #[UpdateIpColumn]
-    #[ORM\Column(length: 128, nullable: true, options: ['comment' => '更新时IP'])]
     private ?string $updatedFromIp = null;
 
     public function __construct()

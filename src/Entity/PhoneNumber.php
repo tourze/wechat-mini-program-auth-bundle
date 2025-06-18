@@ -6,13 +6,11 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Stringable;
 use Tourze\DoctrineIndexedBundle\Attribute\IndexColumn;
 use Tourze\DoctrineIpBundle\Attribute\CreateIpColumn;
 use Tourze\DoctrineIpBundle\Attribute\UpdateIpColumn;
 use Tourze\DoctrineTimestampBundle\Traits\TimestampableAware;
-use Tourze\EasyAdmin\Attribute\Action\Deletable;
-use Tourze\EasyAdmin\Attribute\Column\ExportColumn;
-use Tourze\EasyAdmin\Attribute\Column\ListColumn;
 use WechatMiniProgramAuthBundle\Repository\PhoneNumberRepository;
 use WechatMiniProgramBundle\Entity\LaunchOptionsAware;
 
@@ -22,16 +20,13 @@ use WechatMiniProgramBundle\Entity\LaunchOptionsAware;
  * 一个微信用户，有可能会授权多个手机号码的喔
  * 同一个手机号码，也可能有多个人一起使用，所以这个不能直接当做唯一标志
  */
-#[Deletable]
 #[ORM\Entity(repositoryClass: PhoneNumberRepository::class)]
 #[ORM\Table(name: 'wechat_mini_program_phone_number', options: ['comment' => '授权手机号'])]
-class PhoneNumber
+class PhoneNumber implements Stringable
 {
     use TimestampableAware;
     use LaunchOptionsAware;
 
-    #[ListColumn(order: -1)]
-    #[ExportColumn]
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: Types::INTEGER, options: ['comment' => 'ID'])]
@@ -47,7 +42,6 @@ class PhoneNumber
      * 用户绑定的手机号（国外手机号会有区号）.
      */
     #[IndexColumn]
-    #[ORM\Column(type: Types::STRING, length: 40, unique: true, options: ['comment' => '用户绑定的手机号'])]
     private ?string $phoneNumber = null;
 
     #[ORM\Column(type: Types::STRING, length: 40, nullable: true, options: ['comment' => '没有区号的手机号'])]
@@ -59,15 +53,13 @@ class PhoneNumber
     #[ORM\Column(type: Types::JSON, nullable: true, options: ['comment' => '数据水印'])]
     private ?array $watermark = [];
 
-    #[ORM\Column(type: Types::TEXT, nullable: true)]
+#[ORM\Column(type: Types::TEXT, nullable: true, options: ['comment' => '字段说明'])]
     private ?string $rawData = null;
 
     #[CreateIpColumn]
-    #[ORM\Column(length: 128, nullable: true, options: ['comment' => '创建时IP'])]
     private ?string $createdFromIp = null;
 
     #[UpdateIpColumn]
-    #[ORM\Column(length: 128, nullable: true, options: ['comment' => '更新时IP'])]
     private ?string $updatedFromIp = null;
 
     public function __construct()
@@ -186,4 +178,9 @@ class PhoneNumber
         $this->updatedFromIp = $updatedFromIp;
 
         return $this;
-    }}
+    }
+    public function __toString(): string
+    {
+        return (string) $this->id;
+    }
+}

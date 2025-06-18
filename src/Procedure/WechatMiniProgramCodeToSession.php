@@ -193,7 +193,7 @@ class WechatMiniProgramCodeToSession extends LockableProcedure
         $this->eventDispatcher->dispatch($event);
 
         $result = $event->getResult();
-        if (isset($result['phoneNumbers'])) {
+        if ((bool) isset($result['phoneNumbers'])) {
             // 去重
             $result['phoneNumbers'] = array_unique($result['phoneNumbers']);
             $result['phoneNumbers'] = array_values($result['phoneNumbers']);
@@ -224,12 +224,12 @@ class WechatMiniProgramCodeToSession extends LockableProcedure
         // 我们在后续的使用过程中无法直接拿到用户数据，那么就只能在这里就生成一个用户数据了。。
 
         // 有一种特殊情况，就是我们通过第三方接口，保存了一个临时用户，这种用户信息，我们需要额外修正的
-        if (!$bizUser && $result['unionId']) {
+        if (!$bizUser && (bool) $result['unionId']) {
             $bizUser = $this->bizUserRepository->findOneBy([
                 'username' => "temp_{$result['unionId']}",
                 'identity' => $result['unionId'],
             ]);
-            if ($bizUser) {
+            if ((bool) $bizUser) {
                 // 临时用户，我们最终修正他的用户名为正确的用户名
                 $bizUser->setUsername($result['openId']);
             }

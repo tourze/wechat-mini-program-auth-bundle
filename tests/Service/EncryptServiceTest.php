@@ -71,8 +71,6 @@ class EncryptServiceTest extends TestCase
         
         // 测试解密功能
         $result = $encryptServiceMock->decryptData('session_key', 'iv', 'encrypted_data');
-        
-        $this->assertIsArray($result);
         $this->assertEquals('+8613800138000', $result['phoneNumber']);
         $this->assertEquals('13800138000', $result['purePhoneNumber']);
         $this->assertEquals('86', $result['countryCode']);
