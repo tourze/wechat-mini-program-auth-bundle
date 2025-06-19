@@ -41,7 +41,7 @@ class UploadUserPhone extends LockableProcedure
     public function execute(): array
     {
         $user = $this->userRepository->getBySysUser($this->security->getUser());
-        if (!$user) {
+        if ($user === null) {
             throw new ApiException('找不到微信小程序用户信息');
         }
 
@@ -53,7 +53,7 @@ class UploadUserPhone extends LockableProcedure
         $phoneNumber = $this->phoneNumberRepository->findOneBy([
             'phoneNumber' => $this->phoneNumber,
         ]);
-        if (!$phoneNumber) {
+        if ($phoneNumber === null) {
             $phoneNumber = new PhoneNumber();
             $phoneNumber->setPhoneNumber($this->phoneNumber);
         }

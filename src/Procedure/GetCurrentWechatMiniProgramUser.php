@@ -26,7 +26,7 @@ class GetCurrentWechatMiniProgramUser extends LockableProcedure
     public function execute(): array
     {
         $user = $this->userRepository->getBySysUser($this->security->getUser());
-        if (!$user) {
+        if ($user === null) {
             throw new ApiException('找不到微信小程序用户信息');
         }
 

@@ -33,7 +33,7 @@ class GetUserInfoByUnionId extends BaseProcedure
         }
 
         $user = $this->userLoader->loadUserByUnionId($this->unionId);
-        if (!$user) {
+        if ($user === null) {
             return [];
         }
 

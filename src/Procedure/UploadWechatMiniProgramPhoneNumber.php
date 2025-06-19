@@ -20,6 +20,7 @@ use Tourze\JsonRPCLogBundle\Procedure\LogFormatProcedure;
 use Tourze\UserIDBundle\Model\SystemUser;
 use Tourze\WechatMiniProgramUserContracts\UserLoaderInterface;
 use WechatMiniProgramAuthBundle\Entity\PhoneNumber;
+use WechatMiniProgramAuthBundle\Entity\User;
 use WechatMiniProgramAuthBundle\Event\GetPhoneNumberEvent;
 use WechatMiniProgramAuthBundle\Repository\PhoneNumberRepository;
 use WechatMiniProgramAuthBundle\Request\GetUserPhoneNumberRequest;
@@ -62,11 +63,15 @@ class UploadWechatMiniProgramPhoneNumber extends LockableProcedure implements Lo
     {
         $bizUser = $this->security->getUser();
         $wechatUser = $this->userLoader->loadUserByOpenId($bizUser->getUserIdentifier());
-        if (!$wechatUser) {
+        if ($wechatUser === null) {
             throw new ApiException('找不到微信小程序用户信息');
         }
 
-        if (!$this->code) {
+        if (!$wechatUser instanceof User) {
+            throw new ApiException('用户类型不正确');
+        }
+
+        if (empty($this->code)) {
             throw new ApiException('已不支持旧方式获取手机号码，请升级微信版本');
         }
 
@@ -85,7 +90,7 @@ class UploadWechatMiniProgramPhoneNumber extends LockableProcedure implements Lo
         $phoneNumber = $this->phoneNumberRepository->findOneBy([
             'phoneNumber' => $res['phoneNumber'],
         ]);
-        if (!$phoneNumber) {
+        if ($phoneNumber === null) {
             $phoneNumber = new PhoneNumber();
             $phoneNumber->setPhoneNumber($res['phoneNumber']);
         }

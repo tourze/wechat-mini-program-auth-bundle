@@ -5,7 +5,7 @@ namespace WechatMiniProgramAuthBundle\Procedure;
 use AccessTokenBundle\Service\AccessTokenService;
 use BizUserBundle\Entity\BizUser;
 use BizUserBundle\Repository\BizUserRepository;
-use Carbon\Carbon;
+use Carbon\CarbonImmutable;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
 use HttpClientBundle\Exception\HttpClientException;
@@ -83,7 +83,7 @@ class WechatMiniProgramCodeToSession extends LockableProcedure
     public function execute(): array
     {
         $account = $this->accountService->detectAccountFromRequest($this->requestStack->getMainRequest(), $this->appId);
-        if (!$account) {
+        if ($account === null) {
             throw new ApiException('找不到小程序');
         }
 
@@ -108,10 +108,10 @@ class WechatMiniProgramCodeToSession extends LockableProcedure
                 'code' => $this->code,
                 'account' => $account,
             ]);
-            if (!$log) {
+            if ($log === null) {
                 throw new ApiException('微信登录失败，请重新进入小程序[1]');
             }
-            $now = Carbon::now();
+            $now = CarbonImmutable::now();
             if (abs($now->diffInSeconds($log->getCreateTime())) > 10) {
                 throw new ApiException('微信登录失败，请重新进入小程序[2]');
             }
@@ -138,7 +138,8 @@ class WechatMiniProgramCodeToSession extends LockableProcedure
         $event->setEnterOptions($this->enterOptions);
         $event->setBizUser($this->security->getUser());
         $this->eventDispatcher->dispatch($event);
-        if ($return = $event->getReturn()) {
+        $return = $event->getReturn();
+        if ($return !== null) {
             return $return;
         }
 

@@ -13,6 +13,7 @@ use Tourze\JsonRPC\Core\Exception\ApiException;
 use Tourze\JsonRPCLockBundle\Procedure\LockableProcedure;
 use Tourze\JsonRPCLogBundle\Attribute\Log;
 use Tourze\WechatMiniProgramUserContracts\UserLoaderInterface;
+use WechatMiniProgramAuthBundle\Entity\User;
 
 /**
  * 因为现在在 code2session 时就必然当做登录处理了，那么这里就肯定要登录啦。。
@@ -39,8 +40,12 @@ class ReportWechatMiniProgramAuthorizeResult extends LockableProcedure
     public function execute(): array
     {
         $user = $this->userLoader->loadUserByOpenId($this->security->getUser()->getUserIdentifier());
-        if (!$user) {
+        if ($user === null) {
             throw new ApiException('找不到微信小程序用户信息');
+        }
+
+        if (!$user instanceof User) {
+            throw new ApiException('用户类型不正确');
         }
 
         $user->setAuthorizeScopes($this->scopes);

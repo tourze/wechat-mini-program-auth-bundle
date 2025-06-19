@@ -72,7 +72,7 @@ class UpdateWechatMiniProgramProfile extends LockableProcedure implements LogFor
     public function execute(): array
     {
         $account = $this->accountService->detectAccountFromRequest($this->requestStack->getMainRequest(), $this->appId);
-        if (!$account) {
+        if ($account === null) {
             throw new ApiException('找不到小程序');
         }
 
@@ -81,7 +81,7 @@ class UpdateWechatMiniProgramProfile extends LockableProcedure implements LogFor
             'code' => $this->code,
             'account' => $account,
         ]);
-        if (!$log) {
+        if ($log === null) {
             $request = new CodeToSessionRequest();
             $request->setAppId($account->getAppId());
             $request->setSecret($account->getAppSecret());
@@ -118,7 +118,7 @@ class UpdateWechatMiniProgramProfile extends LockableProcedure implements LogFor
             'openId' => $log->getOpenId(),
             'account' => $account,
         ]);
-        if (!$user) {
+        if ($user === null) {
             $user = new User();
             $user->setAccount($account);
             $user->setOpenId($log->getOpenId());

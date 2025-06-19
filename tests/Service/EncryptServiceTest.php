@@ -8,11 +8,9 @@ use WechatMiniProgramAuthBundle\Service\EncryptService;
 
 class EncryptServiceTest extends TestCase
 {
-    private EncryptService $encryptService;
-
     protected function setUp(): void
     {
-        $this->encryptService = new EncryptService();
+        parent::setUp();
     }
 
     public function testDecryptData_withInvalidJson()
@@ -55,7 +53,7 @@ class EncryptServiceTest extends TestCase
                 // 使用的是重写后的decryptRaw方法，不依赖静态方法
                 $decrypted = $this->decryptRaw($sessionKey, $iv, $encrypted);
                 
-                if ($decrypted === false || $decrypted === '') {
+                if ($decrypted === '') {
                     throw new DecryptException('Failed to decrypt data.');
                 }
                 
@@ -92,7 +90,7 @@ class EncryptServiceTest extends TestCase
             {
                 $decrypted = $this->decryptRaw($sessionKey, $iv, $encrypted);
                 
-                if ($decrypted === false || $decrypted === '') {
+                if ($decrypted === '') {
                     throw new DecryptException('Failed to decrypt data.');
                 }
                 
@@ -128,7 +126,7 @@ class EncryptServiceTest extends TestCase
             {
                 $decrypted = $this->decryptRaw($sessionKey, $iv, $encrypted);
                 
-                if ($decrypted === false || $decrypted === '') {
+                if ($decrypted === '') {
                     throw new DecryptException('Failed to decrypt data.');
                 }
                 
@@ -166,6 +164,8 @@ class EncryptServiceTest extends TestCase
         $this->assertEquals('encrypted', $parameters[2]->getName());
         
         // 验证返回类型
-        $this->assertEquals('array', $reflectionMethod->getReturnType()->getName());
+        $returnType = $reflectionMethod->getReturnType();
+        $this->assertNotNull($returnType);
+        $this->assertEquals('array', (string) $returnType);
     }
 } 

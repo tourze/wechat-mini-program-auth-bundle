@@ -49,7 +49,7 @@ class WechatMiniProgramDecryptData extends LockableProcedure
     public function execute(): array
     {
         $account = $this->accountService->detectAccountFromRequest($this->requestStack->getMainRequest(), $this->appId);
-        if (!$account) {
+        if ($account === null) {
             throw new ApiException('找不到小程序');
         }
 
@@ -58,7 +58,7 @@ class WechatMiniProgramDecryptData extends LockableProcedure
             'code' => $this->code,
             'account' => $account,
         ]);
-        if (!$log) {
+        if ($log === null) {
             $request = new CodeToSessionRequest();
             $request->setAppId($account->getAppId());
             $request->setSecret($account->getAppSecret());

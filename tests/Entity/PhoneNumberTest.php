@@ -9,12 +9,10 @@ use WechatMiniProgramAuthBundle\Entity\User;
 class PhoneNumberTest extends TestCase
 {
     private PhoneNumber $phoneNumber;
-    private User $user;
 
     protected function setUp(): void
     {
         $this->phoneNumber = new PhoneNumber();
-        $this->user = $this->createMock(User::class);
     }
 
     public function testSetAndGetPhoneNumber()
