@@ -5,14 +5,12 @@ namespace WechatMiniProgramAuthBundle\Entity;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Tourze\DoctrineIndexedBundle\Attribute\IndexColumn;
-use Tourze\EasyAdmin\Attribute\Action\BatchDeletable;
 use Tourze\LockServiceBundle\Model\LockEntity;
 use Tourze\ScheduleEntityCleanBundle\Attribute\AsScheduleClean;
 use WechatMiniProgramAuthBundle\Repository\CodeSessionLogRepository;
 use WechatMiniProgramBundle\Entity\Account;
 use WechatMiniProgramBundle\Entity\LaunchOptionsAware;
 
-#[BatchDeletable]
 #[AsScheduleClean(expression: '30 5 * * *', defaultKeepDay: 18, keepDayEnv: 'CODE_SESSION_PERSIST_DAY')]
 #[ORM\Entity(repositoryClass: CodeSessionLogRepository::class)]
 #[ORM\Table(name: 'wechat_mini_program_code_session_log', options: ['comment' => 'code2session日志'])]
