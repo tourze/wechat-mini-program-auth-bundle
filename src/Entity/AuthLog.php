@@ -7,7 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Stringable;
 use Tourze\DoctrineIndexedBundle\Attribute\IndexColumn;
 use Tourze\DoctrineIpBundle\Attribute\CreateIpColumn;
-use Tourze\DoctrineUserBundle\Attribute\CreatedByColumn;
+use Tourze\DoctrineUserBundle\Traits\CreatedByAware;
 use WechatMiniProgramAuthBundle\Repository\AuthLogRepository;
 
 /**
@@ -17,6 +17,7 @@ use WechatMiniProgramAuthBundle\Repository\AuthLogRepository;
 #[ORM\Table(name: 'wechat_mini_program_auth_log', options: ['comment' => '授权日志'])]
 class AuthLog implements Stringable
 {
+    use CreatedByAware;
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: Types::INTEGER, options: ['comment' => '主键'])]
@@ -28,9 +29,6 @@ class AuthLog implements Stringable
 
     #[CreateIpColumn]
     private ?string $createdFromIp = null;
-
-    #[CreatedByColumn]
-    private ?string $createdBy = null;
 
     #[IndexColumn]
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true, options: ['comment' => '创建时间'])]

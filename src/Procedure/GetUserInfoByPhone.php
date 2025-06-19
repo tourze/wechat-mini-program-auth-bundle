@@ -8,6 +8,7 @@ use Tourze\JsonRPC\Core\Attribute\MethodParam;
 use Tourze\JsonRPC\Core\Attribute\MethodTag;
 use Tourze\JsonRPC\Core\Exception\ApiException;
 use Tourze\JsonRPC\Core\Procedure\BaseProcedure;
+use WechatMiniProgramAuthBundle\Entity\User;
 use WechatMiniProgramAuthBundle\Repository\UserRepository;
 
 #[MethodTag('微信小程序')]
@@ -37,7 +38,7 @@ class GetUserInfoByPhone extends BaseProcedure
             ->getQuery()
             ->getOneOrNullResult();
 
-        if (!$user) {
+        if (!$user instanceof User) {
             return [];
         }
 

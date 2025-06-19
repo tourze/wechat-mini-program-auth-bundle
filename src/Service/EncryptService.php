@@ -20,7 +20,7 @@ class EncryptService
 
         $decrypted = json_decode($decrypted, true);
 
-        if (!$decrypted) {
+        if (!is_array($decrypted)) {
             throw new DecryptException('The given payload is invalid.');
         }
 

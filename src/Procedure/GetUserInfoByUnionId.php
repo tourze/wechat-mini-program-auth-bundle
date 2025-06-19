@@ -9,6 +9,7 @@ use Tourze\JsonRPC\Core\Attribute\MethodTag;
 use Tourze\JsonRPC\Core\Exception\ApiException;
 use Tourze\JsonRPC\Core\Procedure\BaseProcedure;
 use Tourze\WechatMiniProgramUserContracts\UserLoaderInterface;
+use WechatMiniProgramAuthBundle\Entity\PhoneNumber;
 use WechatMiniProgramAuthBundle\Repository\PhoneNumberRepository;
 
 #[MethodTag('微信小程序')]
@@ -47,7 +48,7 @@ class GetUserInfoByUnionId extends BaseProcedure
         return [
             'open_id' => $user->getOpenId(),
             'union_id' => $user->getUnionId(),
-            'phone' => $phone ? $phone->getPhoneNumber() : '',
+            'phone' => $phone instanceof PhoneNumber ? $phone->getPhoneNumber() : '',
         ];
     }
 }

@@ -12,7 +12,6 @@ use Tourze\DoctrineIndexedBundle\Attribute\IndexColumn;
 use Tourze\DoctrineIpBundle\Attribute\CreateIpColumn;
 use Tourze\DoctrineIpBundle\Attribute\UpdateIpColumn;
 use Tourze\DoctrineTimestampBundle\Traits\TimestampableAware;
-use Tourze\EasyAdmin\Attribute\Column\PictureColumn;
 use Tourze\UserIDBundle\Contracts\IdentityInterface;
 use Tourze\UserIDBundle\Model\Identity;
 use Tourze\WechatMiniProgramAppIDContracts\MiniProgramInterface;
@@ -59,7 +58,6 @@ class User implements \Stringable, IdentityInterface, \Tourze\WechatMiniProgramU
      * 用户没有头像时该项为空。
      * 若用户更换头像，原有头像 URL 将失效。
      */
-    #[PictureColumn]
     private ?string $avatarUrl = null;
 
     #[ORM\Column(type: Types::INTEGER, nullable: true, enumType: Gender::class, options: ['comment' => '性别'])]
