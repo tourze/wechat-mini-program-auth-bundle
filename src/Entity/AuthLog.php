@@ -34,7 +34,7 @@ class AuthLog implements Stringable
 
     #[IndexColumn]
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true, options: ['comment' => '创建时间'])]
-    private ?\DateTimeInterface $createTime = null;
+    private ?\DateTimeImmutable $createTime = null;
 
     public function getId(): ?int
     {
@@ -89,12 +89,12 @@ class AuthLog implements Stringable
         return $this;
     }
 
-    public function setCreateTime(?\DateTimeInterface $createdAt): void
+    public function setCreateTime(?\DateTimeImmutable $createdAt): void
     {
         $this->createTime = $createdAt;
     }
 
-    public function getCreateTime(): ?\DateTimeInterface
+    public function getCreateTime(): ?\DateTimeImmutable
     {
         return $this->createTime;
     }

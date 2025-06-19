@@ -15,7 +15,7 @@ use WechatMiniProgramBundle\Entity\LaunchOptionsAware;
 #[ORM\Entity(repositoryClass: CodeSessionLogRepository::class)]
 #[ORM\Table(name: 'wechat_mini_program_code_session_log', options: ['comment' => 'code2session日志'])]
 class CodeSessionLog implements LockEntity
-{
+, \Stringable{
     use LaunchOptionsAware;
 
     #[ORM\Id]
@@ -47,7 +47,7 @@ class CodeSessionLog implements LockEntity
 
     #[IndexColumn]
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true, options: ['comment' => '创建时间'])]
-    private ?\DateTimeInterface $createTime = null;
+    private ?\DateTimeImmutable $createTime = null;
 
     public function getId(): ?int
     {
@@ -136,14 +136,14 @@ class CodeSessionLog implements LockEntity
         $this->createdFromIp = $createdFromIp;
     }
 
-    public function setCreateTime(?\DateTimeInterface $createdAt): self
+    public function setCreateTime(?\DateTimeImmutable $createdAt): self
     {
         $this->createTime = $createdAt;
 
         return $this;
     }
 
-    public function getCreateTime(): ?\DateTimeInterface
+    public function getCreateTime(): ?\DateTimeImmutable
     {
         return $this->createTime;
     }
@@ -151,5 +151,11 @@ class CodeSessionLog implements LockEntity
     public function retrieveLockResource(): string
     {
         return "wechat_mini_program_code_session_log_{$this->getOpenId()}";
+    }
+
+
+    public function __toString(): string
+    {
+        return sprintf('%s #%s', 'CodeSessionLog', $this->id ?? 'new');
     }
 }
