@@ -39,10 +39,10 @@ class UserRepository extends ServiceEntityRepository implements WechatMiniProgra
     public function getBySysUser(UserInterface $sysUser): ?User
     {
         $user = $this->findOneBy(['user' => $sysUser]);
-        if (!$user) {
+        if ($user === null) {
             $user = $this->findOneBy(['openId' => $sysUser->getUserIdentifier()]);
         }
-        if (!$user) {
+        if ($user === null) {
             $user = $this->findOneBy(['unionId' => $sysUser->getUserIdentifier()]);
         }
 
@@ -54,14 +54,14 @@ class UserRepository extends ServiceEntityRepository implements WechatMiniProgra
      */
     public function transformToWechatUser(BizUser|UserInterface $user): ?User
     {
-        if ((bool) $user instanceof SystemUser) {
+        if ($user instanceof SystemUser) {
             return null;
         }
 
         $wechatUser = $this->findOneBy([
             'openId' => $user->getUsername(),
         ]);
-        if ((bool) $wechatUser) {
+        if ($wechatUser !== null) {
             return $wechatUser;
         }
 
@@ -69,7 +69,7 @@ class UserRepository extends ServiceEntityRepository implements WechatMiniProgra
             $wechatUser = $this->findOneBy([
                 'unionId' => $user->getIdentity(),
             ]);
-            if ((bool) $wechatUser) {
+            if ($wechatUser !== null) {
                 return $wechatUser;
             }
         }
@@ -83,11 +83,11 @@ class UserRepository extends ServiceEntityRepository implements WechatMiniProgra
     public function transformToSysUser(User $entity): UserInterface
     {
         $bizUser = $entity->getUser();
-        if ((bool) $bizUser) {
+        if ($bizUser !== null) {
             return $bizUser;
         }
         $bizUser = $this->userLoader->loadUserByIdentifier($entity->getOpenId());
-        if (!$bizUser) {
+        if ($bizUser === null) {
             $bizUser = new BizUser();
             $bizUser->setUsername($entity->getOpenId());
             $bizUser->setNickName($entity->getNickName() ?: $_ENV['DEFAULT_NICK_NAME']);
@@ -134,7 +134,7 @@ class UserRepository extends ServiceEntityRepository implements WechatMiniProgra
 
         try {
             $user = $this->loadUserByOpenId($openId);
-            if (!$user) {
+            if ($user === null) {
                 $user = new User();
                 $user->setAccount($miniProgram);
                 $user->setOpenId($openId);

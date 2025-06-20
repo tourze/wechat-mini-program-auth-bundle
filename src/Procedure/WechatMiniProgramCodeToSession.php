@@ -3,8 +3,6 @@
 namespace WechatMiniProgramAuthBundle\Procedure;
 
 use AccessTokenBundle\Service\AccessTokenService;
-use BizUserBundle\Entity\BizUser;
-use BizUserBundle\Repository\BizUserRepository;
 use Carbon\CarbonImmutable;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
@@ -28,6 +26,7 @@ use Tourze\JsonRPCLockBundle\Procedure\LockableProcedure;
 use Tourze\JsonRPCLogBundle\Attribute\Log;
 use Tourze\LoginProtectBundle\Service\LoginService;
 use Tourze\UserIDBundle\Model\SystemUser;
+use Tourze\UserServiceContracts\UserManagerInterface;
 use WechatMiniProgramAuthBundle\Entity\CodeSessionLog;
 use WechatMiniProgramAuthBundle\Entity\User;
 use WechatMiniProgramAuthBundle\Enum\Language;
@@ -70,7 +69,7 @@ class WechatMiniProgramCodeToSession extends LockableProcedure
         private readonly UpsertManager $upsertManager,
         private readonly Client $client,
         private readonly EventDispatcherInterface $eventDispatcher,
-        private readonly BizUserRepository $bizUserRepository,
+        private readonly UserManagerInterface $userManager,
         private readonly UserLoaderInterface $userLoader,
         private readonly AccessTokenService $accessTokenService,
         private readonly RequestStack $requestStack,
