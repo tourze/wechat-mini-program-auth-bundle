@@ -30,7 +30,6 @@
     "symfony/serializer": "^6.4",
     "symfony/yaml": "^6.4 || ^7.1",
     "tourze/access-token-bundle": "0.0.*",
-    "tourze/biz-user-bundle": "0.0.*",
     "tourze/doctrine-indexed-bundle": "0.0.*",
     "tourze/doctrine-ip-bundle": "0.0.*",
     "tourze/doctrine-resolve-target-entity-bundle": "0.0.*",

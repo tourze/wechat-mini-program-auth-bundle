@@ -45,19 +45,18 @@ class User implements \Stringable, IdentityInterface, \Tourze\WechatMiniProgramU
     #[ORM\JoinColumn(onDelete: 'SET NULL')]
     private ?Account $account = null;
 
+    #[IndexColumn]
+    #[ORM\Column(type: Types::STRING, length: 120, options: ['comment' => 'OpenID'])]
     private string $openId;
 
     #[IndexColumn]
+    #[ORM\Column(type: Types::STRING, length: 120, nullable: true, options: ['comment' => 'UnionID'])]
     private ?string $unionId = null;
 
+    #[ORM\Column(type: Types::STRING, length: 255, nullable: true, options: ['comment' => '昵称'])]
     private ?string $nickName = null;
 
-    /**
-     * 用户头像图片的 URL。
-     * URL 最后一个数值代表正方形头像大小（有 0、46、64、96、132 数值可选，0 代表 640x640 的正方形头像，46 表示 46x46 的正方形头像，剩余数值以此类推。默认132）。
-     * 用户没有头像时该项为空。
-     * 若用户更换头像，原有头像 URL 将失效。
-     */
+    #[ORM\Column(type: Types::STRING, length: 500, nullable: true, options: ['comment' => '头像URL'])]
     private ?string $avatarUrl = null;
 
     #[ORM\Column(type: Types::INTEGER, nullable: true, enumType: Gender::class, options: ['comment' => '性别'])]
@@ -72,7 +71,8 @@ class User implements \Stringable, IdentityInterface, \Tourze\WechatMiniProgramU
     #[ORM\Column(type: Types::STRING, length: 100, nullable: true, options: ['comment' => '地区'])]
     private ?string $city = null;
 
-    private Language $language;
+    #[ORM\Column(type: Types::STRING, length: 10, nullable: false, enumType: Language::class, options: ['comment' => '语言', 'default' => 'zh_CN'])]
+    private Language $language = Language::zh_CN;
 
     #[ORM\Column(type: Types::TEXT, nullable: true, options: ['comment' => '原始数据'])]
     private ?string $rawData = null;
@@ -130,8 +130,12 @@ class User implements \Stringable, IdentityInterface, \Tourze\WechatMiniProgramU
         return $this->account;
     }
 
-    public function setAccount(?Account $account): self
+    public function setAccount(Account|MiniProgramInterface|null $account): self
     {
+        if ($account instanceof MiniProgramInterface && !($account instanceof Account)) {
+            // 如果是 MiniProgramInterface 但不是 Account，尝试转换
+            throw new \TypeError('Account must be an instance of WechatMiniProgramBundle\Entity\Account');
+        }
         $this->account = $account;
 
         return $this;

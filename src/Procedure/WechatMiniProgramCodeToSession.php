@@ -26,13 +26,13 @@ use Tourze\JsonRPCLockBundle\Procedure\LockableProcedure;
 use Tourze\JsonRPCLogBundle\Attribute\Log;
 use Tourze\LoginProtectBundle\Service\LoginService;
 use Tourze\UserIDBundle\Model\SystemUser;
-use Tourze\UserServiceContracts\UserManagerInterface;
 use WechatMiniProgramAuthBundle\Entity\CodeSessionLog;
 use WechatMiniProgramAuthBundle\Entity\User;
 use WechatMiniProgramAuthBundle\Enum\Language;
 use WechatMiniProgramAuthBundle\Event\CodeToSessionRequestEvent;
 use WechatMiniProgramAuthBundle\Event\CodeToSessionResponseEvent;
 use WechatMiniProgramAuthBundle\Repository\CodeSessionLogRepository;
+use WechatMiniProgramAuthBundle\Repository\UserRepository;
 use WechatMiniProgramAuthBundle\Request\CodeToSessionRequest;
 use WechatMiniProgramBundle\Procedure\LaunchOptionsAware;
 use WechatMiniProgramBundle\Service\AccountService;
@@ -69,7 +69,6 @@ class WechatMiniProgramCodeToSession extends LockableProcedure
         private readonly UpsertManager $upsertManager,
         private readonly Client $client,
         private readonly EventDispatcherInterface $eventDispatcher,
-        private readonly UserManagerInterface $userManager,
         private readonly UserLoaderInterface $userLoader,
         private readonly AccessTokenService $accessTokenService,
         private readonly RequestStack $requestStack,
@@ -164,15 +163,33 @@ class WechatMiniProgramCodeToSession extends LockableProcedure
         $bizUser = null;
         $isNewUser = false;
         $this->checkUser($wechatUser, $result, $isNewUser, $bizUser);
-        /* @var BizUser $bizUser */
+        
+        // 如果没有找到对应的系统用户，通过 UserRepository 创建
+        if ($bizUser === null) {
+            $userRepository = $this->entityManager->getRepository(User::class);
+            if ($userRepository instanceof UserRepository) {
+                $bizUser = $userRepository->transformToSysUser($wechatUser);
+                $isNewUser = true;
+            } else {
+                throw new \RuntimeException('Repository must be instance of UserRepository');
+            }
+        }
 
         // 既然每次都是这个鬼样，那么用户就不用再提供啥刷新信息的机制了
-        $result['user'] = $bizUser->retrieveApiArray();
+        if (method_exists($bizUser, 'retrieveApiArray')) {
+            $result['user'] = $bizUser->retrieveApiArray();
+        } else {
+            // 如果没有 retrieveApiArray 方法，返回基本信息
+            $result['user'] = [
+                'id' => $bizUser->getUserIdentifier(),
+                'username' => $bizUser->getUserIdentifier(),
+            ];
+        }
         $result['jwt'] = $this->accessTokenService->createToken($bizUser);
 
         // 补充返回手机号码信息
         $result['phoneNumbers'] = [];
-        if ($bizUser->getMobile()) {
+        if (method_exists($bizUser, 'getMobile') && $bizUser->getMobile()) {
             $result['phoneNumbers'][] = $bizUser->getMobile();
         }
         foreach ($wechatUser->getPhoneNumbers() as $phoneNumber) {
@@ -224,29 +241,17 @@ class WechatMiniProgramCodeToSession extends LockableProcedure
         // 我们在后续的使用过程中无法直接拿到用户数据，那么就只能在这里就生成一个用户数据了。。
 
         // 有一种特殊情况，就是我们通过第三方接口，保存了一个临时用户，这种用户信息，我们需要额外修正的
-        if (!$bizUser && (bool) $result['unionId']) {
-            $bizUser = $this->bizUserRepository->findOneBy([
-                'username' => "temp_{$result['unionId']}",
-                'identity' => $result['unionId'],
-            ]);
-            if ((bool) $bizUser) {
-                // 临时用户，我们最终修正他的用户名为正确的用户名
-                $bizUser->setUsername($result['openId']);
-            }
+        if ($bizUser === null && !empty($result['unionId'])) {
+            $bizUser = $this->userLoader->loadUserByIdentifier("temp_{$result['unionId']}");
         }
 
-        if (!$bizUser) {
+        if ($bizUser === null) {
             $isNewUser = true;
-            $bizUser = new BizUser();
-            $bizUser->setUsername($wechatUser->getOpenId());
-            // 这个时候，还没有昵称啦。。只能随机一个
-            $bizUser->setNickName($_ENV['DEFAULT_NICK_NAME']);
-            // 头像地址来自 https://developers.weixin.qq.com/miniprogram/dev/framework/open-ability/userProfile.html
-            $bizUser->setAvatar($_ENV['DEFAULT_USER_AVATAR_URL']);
-            $bizUser->setValid(true);
+            // 不再直接创建 BizUser，改为通过 UserRepository 的 transformToSysUser 方法
+            // 这样可以保持代码的解耦性
         }
 
-        if ($wechatUser->getUnionId()) {
+        if (!empty($wechatUser->getUnionId()) && $bizUser !== null && method_exists($bizUser, 'setIdentity')) {
             $bizUser->setIdentity($wechatUser->getUnionId());
         }
 

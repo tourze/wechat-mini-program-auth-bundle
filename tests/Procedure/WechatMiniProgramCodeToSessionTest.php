@@ -3,7 +3,6 @@
 namespace WechatMiniProgramAuthBundle\Tests\Procedure;
 
 use AccessTokenBundle\Service\AccessTokenService;
-use BizUserBundle\Repository\BizUserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
@@ -31,7 +30,6 @@ class WechatMiniProgramCodeToSessionTest extends TestCase
     private $upsertManager;
     private $client;
     private $eventDispatcher;
-    private $bizUserRepository;
     private $userLoader;
     private $accessTokenService;
     private $requestStack;
@@ -48,7 +46,6 @@ class WechatMiniProgramCodeToSessionTest extends TestCase
         $this->upsertManager = $this->createMock(UpsertManager::class);
         $this->client = $this->createMock(Client::class);
         $this->eventDispatcher = $this->createMock(EventDispatcherInterface::class);
-        $this->bizUserRepository = $this->createMock(BizUserRepository::class);
         $this->userLoader = $this->createMock(UserLoaderInterface::class);
         $this->accessTokenService = $this->createMock(AccessTokenService::class);
         $this->requestStack = $this->createMock(RequestStack::class);
@@ -63,7 +60,6 @@ class WechatMiniProgramCodeToSessionTest extends TestCase
             $this->upsertManager,
             $this->client,
             $this->eventDispatcher,
-            $this->bizUserRepository,
             $this->userLoader,
             $this->accessTokenService,
             $this->requestStack,
