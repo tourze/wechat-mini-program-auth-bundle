@@ -82,9 +82,4 @@ class PhoneNumberTest extends TestCase
         $this->assertEquals($now, $this->phoneNumber->getCreateTime());
         $this->assertEquals($now, $this->phoneNumber->getUpdateTime());
     }
-    
-    public function testUserBidirectionalRelationship()
-    {
-        $this->markTestSkipped('简化测试，单纯测试Collection接口即可，不需要测试双向关系');
-    }
 } 

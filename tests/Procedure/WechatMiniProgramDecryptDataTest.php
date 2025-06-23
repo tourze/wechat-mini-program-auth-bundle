@@ -281,12 +281,6 @@ class WechatMiniProgramDecryptDataTest extends TestCase
         $this->procedure->execute();
     }
     
-    public function testExecute_withEmptyEncryptedData()
-    {
-        // 跳过这个测试，因为该测试用例对应的功能不在代码中实现
-        $this->markTestSkipped('WechatMiniProgramDecryptData类中没有对空加密数据的特殊处理');
-    }
-    
     public function testExecute_withMissingParameters()
     {
         // 未设置任何必要的参数

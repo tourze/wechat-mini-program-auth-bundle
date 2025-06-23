@@ -75,6 +75,7 @@ class WechatMiniProgramCodeToSession extends LockableProcedure
         private readonly LoginService $loginService,
         private readonly Security $security,
         private readonly LoggerInterface $logger,
+        private readonly UserRepository $userRepository,
     ) {
     }
 
@@ -166,13 +167,8 @@ class WechatMiniProgramCodeToSession extends LockableProcedure
         
         // 如果没有找到对应的系统用户，通过 UserRepository 创建
         if ($bizUser === null) {
-            $userRepository = $this->entityManager->getRepository(User::class);
-            if ($userRepository instanceof UserRepository) {
-                $bizUser = $userRepository->transformToSysUser($wechatUser);
-                $isNewUser = true;
-            } else {
-                throw new \RuntimeException('Repository must be instance of UserRepository');
-            }
+            $bizUser = $this->userRepository->transformToSysUser($wechatUser);
+            $isNewUser = true;
         }
 
         // 既然每次都是这个鬼样，那么用户就不用再提供啥刷新信息的机制了

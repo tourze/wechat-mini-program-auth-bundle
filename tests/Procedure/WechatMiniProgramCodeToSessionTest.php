@@ -18,6 +18,7 @@ use Tourze\LoginProtectBundle\Service\LoginService;
 use WechatMiniProgramAuthBundle\Entity\CodeSessionLog;
 use WechatMiniProgramAuthBundle\Procedure\WechatMiniProgramCodeToSession;
 use WechatMiniProgramAuthBundle\Repository\CodeSessionLogRepository;
+use WechatMiniProgramAuthBundle\Repository\UserRepository;
 use WechatMiniProgramBundle\Entity\Account;
 use WechatMiniProgramBundle\Service\AccountService;
 use WechatMiniProgramBundle\Service\Client;
@@ -36,6 +37,7 @@ class WechatMiniProgramCodeToSessionTest extends TestCase
     private $loginService;
     private $security;
     private $logger;
+    private $userRepository;
     private WechatMiniProgramCodeToSession $procedure;
 
     protected function setUp(): void
@@ -52,6 +54,7 @@ class WechatMiniProgramCodeToSessionTest extends TestCase
         $this->loginService = $this->createMock(LoginService::class);
         $this->security = $this->createMock(Security::class);
         $this->logger = $this->createMock(LoggerInterface::class);
+        $this->userRepository = $this->createMock(UserRepository::class);
 
         $this->procedure = new WechatMiniProgramCodeToSession(
             $this->accountService,
@@ -65,7 +68,8 @@ class WechatMiniProgramCodeToSessionTest extends TestCase
             $this->requestStack,
             $this->loginService,
             $this->security,
-            $this->logger
+            $this->logger,
+            $this->userRepository
         );
     }
 
@@ -94,18 +98,6 @@ class WechatMiniProgramCodeToSessionTest extends TestCase
         
         // 执行测试
         $this->procedure->execute();
-    }
-    
-    public function testExecute_withHttpClientException()
-    {
-        // 跳过这个测试，因为HttpClientException需要特定的依赖
-        $this->markTestSkipped('HttpClientException构造函数需要RequestInterface和ResponseInterface，难以模拟');
-    }
-    
-    public function testExecute_withOtherHttpClientException()
-    {
-        // 跳过这个测试，因为HttpClientException需要特定的依赖
-        $this->markTestSkipped('HttpClientException构造函数需要RequestInterface和ResponseInterface，难以模拟');
     }
     
     public function testExecute_withInvalidSessionAndNoPreviousLog()
@@ -198,12 +190,6 @@ class WechatMiniProgramCodeToSessionTest extends TestCase
         $this->procedure->execute();
     }
     
-    public function testExecute_withValidInputAndNewUser()
-    {
-        // 跳过这个测试，因为需要模拟太多依赖，实际集成测试更合适
-        $this->markTestSkipped('这个测试需要大量模拟，建议通过集成测试验证');
-    }
-    
     public function testGetLockResource()
     {
         $code = 'test_code';
@@ -212,10 +198,5 @@ class WechatMiniProgramCodeToSessionTest extends TestCase
         $result = $this->procedure->getLockResource($params);
         
         $this->assertEquals(['WechatMiniProgramCodeToSession' . $code], $result);
-    }
-    
-    public function testGetIdempotentCacheKey()
-    {
-        $this->markTestSkipped('由于JsonRpcRequest初始化需要params参数，而创建有效的params需要更多模拟，此测试暂时跳过');
     }
 } 
