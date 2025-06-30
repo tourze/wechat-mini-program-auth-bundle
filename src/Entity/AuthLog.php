@@ -63,18 +63,6 @@ class AuthLog implements Stringable
         return $this;
     }
 
-    public function setCreatedBy(?string $createdBy): self
-    {
-        $this->createdBy = $createdBy;
-
-        return $this;
-    }
-
-    public function getCreatedBy(): ?string
-    {
-        return $this->createdBy;
-    }
-
     public function getCreatedFromIp(): ?string
     {
         return $this->createdFromIp;

@@ -11,12 +11,12 @@ use Tourze\JsonRPC\Core\Procedure\BaseProcedure;
 use WechatMiniProgramAuthBundle\Entity\User;
 use WechatMiniProgramAuthBundle\Repository\UserRepository;
 
-#[MethodTag('微信小程序')]
-#[MethodDoc('通过手机号获取用户信息')]
-#[MethodExpose('GetUserInfoByPhone')]
+#[MethodTag(name: '微信小程序')]
+#[MethodDoc(summary: '通过手机号获取用户信息')]
+#[MethodExpose(method: 'GetUserInfoByPhone')]
 class GetUserInfoByPhone extends BaseProcedure
 {
-    #[MethodParam('phone')]
+    #[MethodParam(description: 'phone')]
     public string $phoneNumber = '';
 
     public function __construct(

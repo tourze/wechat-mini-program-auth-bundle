@@ -39,11 +39,11 @@ use WechatMiniProgramBundle\Service\AccountService;
 use WechatMiniProgramBundle\Service\Client;
 use Yiisoft\Json\Json;
 
-#[MethodDoc('微信小程序初始化code2session接口')]
-#[MethodTag('微信小程序')]
-#[MethodExpose('WechatMiniProgramCodeToSession')]
+#[MethodDoc(summary: '微信小程序初始化code2session接口')]
+#[MethodTag(name: '微信小程序')]
+#[MethodExpose(method: 'WechatMiniProgramCodeToSession')]
 #[Log]
-#[WithMonologChannel('procedure')]
+#[WithMonologChannel(channel: 'procedure')]
 class WechatMiniProgramCodeToSession extends LockableProcedure
 {
     use LaunchOptionsAware;
@@ -55,10 +55,10 @@ class WechatMiniProgramCodeToSession extends LockableProcedure
      * @see https://developers.weixin.qq.com/miniprogram/dev/api/open-api/login/wx.login.html
      * @see https://developers.weixin.qq.com/miniprogram/dev/api-backend/open-api/login/auth.code2Session.html
      */
-    #[MethodParam('前端调用 wx.getAccountInfoSync 获得的信息')]
+    #[MethodParam(description: '前端调用 wx.getAccountInfoSync 获得的信息')]
     public string $appId = '';
 
-    #[MethodParam('wx.login获得的code，如果想模拟指定OpenID登录，可以传入 mock_{"openid":"XXX","unionid":"YYY","session_key":"123"}')]
+    #[MethodParam(description: 'wx.login获得的code，如果想模拟指定OpenID登录，可以传入 mock_{"openid":"XXX","unionid":"YYY","session_key":"123"}')]
     #[Assert\NotNull]
     public string $code;
 

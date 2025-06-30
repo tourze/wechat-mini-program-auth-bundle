@@ -19,14 +19,14 @@ use WechatMiniProgramAuthBundle\Event\GetPhoneNumberEvent;
 use WechatMiniProgramAuthBundle\Repository\PhoneNumberRepository;
 use WechatMiniProgramAuthBundle\Repository\UserRepository;
 
-#[MethodTag('微信小程序')]
-#[MethodDoc('更新用户手机号')]
-#[MethodExpose('UploadUserPhone')]
-#[IsGranted('IS_AUTHENTICATED_FULLY')]
+#[MethodTag(name: '微信小程序')]
+#[MethodDoc(summary: '更新用户手机号')]
+#[MethodExpose(method: 'UploadUserPhone')]
+#[IsGranted(attribute: 'IS_AUTHENTICATED_FULLY')]
 #[Log]
 class UploadUserPhone extends LockableProcedure
 {
-    #[MethodParam('phone')]
+    #[MethodParam(description: 'phone')]
     public string $phoneNumber = '';
 
     public function __construct(

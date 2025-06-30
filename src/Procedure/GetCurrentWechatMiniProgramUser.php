@@ -11,10 +11,10 @@ use Tourze\JsonRPC\Core\Exception\ApiException;
 use Tourze\JsonRPCLockBundle\Procedure\LockableProcedure;
 use WechatMiniProgramAuthBundle\Repository\UserRepository;
 
-#[MethodTag('微信小程序')]
-#[MethodDoc('获取用户信息')]
-#[MethodExpose('GetCurrentWechatMiniProgramUser')]
-#[IsGranted('IS_AUTHENTICATED_FULLY')]
+#[MethodTag(name: '微信小程序')]
+#[MethodDoc(summary: '获取用户信息')]
+#[MethodExpose(method: 'GetCurrentWechatMiniProgramUser')]
+#[IsGranted(attribute: 'IS_AUTHENTICATED_FULLY')]
 class GetCurrentWechatMiniProgramUser extends LockableProcedure
 {
     public function __construct(

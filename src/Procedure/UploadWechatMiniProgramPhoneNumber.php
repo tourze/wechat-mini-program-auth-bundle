@@ -32,20 +32,20 @@ use Yiisoft\Json\Json;
  * @see https://developers.weixin.qq.com/miniprogram/dev/api-backend/open-api/phonenumber/phonenumber.getPhoneNumber.html
  * @see https://developers.weixin.qq.com/miniprogram/dev/framework/open-ability/getPhoneNumber.html
  */
-#[MethodTag('微信小程序')]
-#[MethodDoc('上传用户手机号码')]
-#[IsGranted('IS_AUTHENTICATED_FULLY')]
+#[MethodTag(name: '微信小程序')]
+#[MethodDoc(summary: '上传用户手机号码')]
+#[IsGranted(attribute: 'IS_AUTHENTICATED_FULLY')]
 #[Log]
-#[MethodExpose('UploadWechatMiniProgramPhoneNumber')]
-#[WithMonologChannel('procedure')]
+#[MethodExpose(method: 'UploadWechatMiniProgramPhoneNumber')]
+#[WithMonologChannel(channel: 'procedure')]
 class UploadWechatMiniProgramPhoneNumber extends LockableProcedure implements LogFormatProcedure
 {
     use LaunchOptionsAware;
 
-    #[MethodParam('getPhoneNumber的授权code')]
+    #[MethodParam(description: 'getPhoneNumber的授权code')]
     public string $code = '';
 
-    #[MethodParam('注册来源')]
+    #[MethodParam(description: '注册来源')]
     public string $source = '';
 
     public function __construct(
@@ -73,6 +73,10 @@ class UploadWechatMiniProgramPhoneNumber extends LockableProcedure implements Lo
 
         if (empty($this->code)) {
             throw new ApiException('已不支持旧方式获取手机号码，请升级微信版本');
+        }
+
+        if ($wechatUser->getAccount() === null) {
+            throw new ApiException('该用户没有绑定微信小程序');
         }
 
         $request = new GetUserPhoneNumberRequest();

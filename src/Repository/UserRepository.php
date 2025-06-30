@@ -14,6 +14,7 @@ use Tourze\WechatMiniProgramAppIDContracts\MiniProgramInterface;
 use Tourze\WechatMiniProgramUserContracts\UserInterface as WechatMiniProgramUserInterface;
 use Tourze\WechatMiniProgramUserContracts\UserLoaderInterface as WechatMiniProgramUserLoaderInterface;
 use WechatMiniProgramAuthBundle\Entity\User;
+use WechatMiniProgramAuthBundle\Exception\UserManagerNotAvailableException;
 use WechatMiniProgramBundle\WechatMiniProgramBundle;
 
 /**
@@ -92,8 +93,8 @@ class UserRepository extends ServiceEntityRepository implements WechatMiniProgra
             /** @var UserManagerInterface $userManager */
             $userManager = $this->userLoader;
             if ($userManager instanceof UserManagerInterface) {
-                $nickName = $entity->getNickName() ?: $_ENV['DEFAULT_NICK_NAME'];
-                $avatarUrl = $entity->getAvatarUrl() ?: WechatMiniProgramBundle::DEFAULT_AVATAR;
+                $nickName = $entity->getNickName() ?? $_ENV['DEFAULT_NICK_NAME'];
+                $avatarUrl = $entity->getAvatarUrl() ?? WechatMiniProgramBundle::DEFAULT_AVATAR;
                 $bizUser = $userManager->createUser($entity->getOpenId(), $nickName, $avatarUrl);
                 
                 if (!empty($entity->getUnionId()) && method_exists($bizUser, 'setIdentity')) {
@@ -103,7 +104,7 @@ class UserRepository extends ServiceEntityRepository implements WechatMiniProgra
                 }
             } else {
                 // 如果 userLoader 不是 UserManagerInterface，抛出异常
-                throw new \RuntimeException('UserLoader must implement UserManagerInterface to create new users');
+                throw new UserManagerNotAvailableException('UserLoader must implement UserManagerInterface to create new users');
             }
         } else {
             // 更新现有用户信息

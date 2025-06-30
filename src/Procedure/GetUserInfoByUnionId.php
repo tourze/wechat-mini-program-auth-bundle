@@ -12,12 +12,12 @@ use Tourze\WechatMiniProgramUserContracts\UserLoaderInterface;
 use WechatMiniProgramAuthBundle\Entity\PhoneNumber;
 use WechatMiniProgramAuthBundle\Repository\PhoneNumberRepository;
 
-#[MethodTag('微信小程序')]
-#[MethodDoc('通过unionId获取用户信息')]
-#[MethodExpose('GetUserInfoByUnionId')]
+#[MethodTag(name: '微信小程序')]
+#[MethodDoc(summary: '通过unionId获取用户信息')]
+#[MethodExpose(method: 'GetUserInfoByUnionId')]
 class GetUserInfoByUnionId extends BaseProcedure
 {
-    #[MethodParam('unionId')]
+    #[MethodParam(description: 'unionId')]
     public string $unionId = '';
 
     public function __construct(

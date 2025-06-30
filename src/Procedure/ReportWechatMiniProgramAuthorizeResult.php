@@ -20,14 +20,14 @@ use WechatMiniProgramAuthBundle\Entity\User;
  *
  * @see https://developers.weixin.qq.com/miniprogram/dev/framework/open-ability/authorize.html
  */
-#[MethodTag('微信小程序')]
-#[MethodDoc('上报用户授权scope结果')]
-#[IsGranted('IS_AUTHENTICATED_FULLY')]
-#[MethodExpose('ReportWechatMiniProgramAuthorizeResult')]
+#[MethodTag(name: '微信小程序')]
+#[MethodDoc(summary: '上报用户授权scope结果')]
+#[IsGranted(attribute: 'IS_AUTHENTICATED_FULLY')]
+#[MethodExpose(method: 'ReportWechatMiniProgramAuthorizeResult')]
 #[Log]
 class ReportWechatMiniProgramAuthorizeResult extends LockableProcedure
 {
-    #[MethodParam('已授权scope列表')]
+    #[MethodParam(description: '已授权scope列表')]
     public array $scopes;
 
     public function __construct(

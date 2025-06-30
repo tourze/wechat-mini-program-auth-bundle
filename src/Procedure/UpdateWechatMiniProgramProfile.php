@@ -34,27 +34,27 @@ use Yiisoft\Json\Json;
  * @see https://developers.weixin.qq.com/miniprogram/dev/api/open-api/user-info/wx.getUserProfile.html
  * @see https://developers.weixin.qq.com/community/develop/doc/00022c683e8a80b29bed2142b56c01
  */
-#[MethodTag('微信小程序')]
-#[MethodDoc('更新微信个人信息')]
-#[IsGranted('IS_AUTHENTICATED_FULLY')]
+#[MethodTag(name: '微信小程序')]
+#[MethodDoc(summary: '更新微信个人信息')]
+#[IsGranted(attribute: 'IS_AUTHENTICATED_FULLY')]
 #[Log]
-#[MethodExpose('UpdateWechatMiniProgramProfile')]
-#[WithMonologChannel('procedure')]
+#[MethodExpose(method: 'UpdateWechatMiniProgramProfile')]
+#[WithMonologChannel(channel: 'procedure')]
 class UpdateWechatMiniProgramProfile extends LockableProcedure implements LogFormatProcedure
 {
-    #[MethodParam('AppID')]
+    #[MethodParam(description: 'AppID')]
     public string $appId = '';
 
-    #[MethodParam('云用户ID')]
+    #[MethodParam(description: '云用户ID')]
     public ?string $cloudID = null;
 
-    #[MethodParam('code')]
+    #[MethodParam(description: 'code')]
     public string $code;
 
-    #[MethodParam('iv')]
+    #[MethodParam(description: 'iv')]
     public string $iv;
 
-    #[MethodParam('encryptedData')]
+    #[MethodParam(description: 'encryptedData')]
     public string $encryptedData;
 
     public function __construct(
@@ -128,7 +128,7 @@ class UpdateWechatMiniProgramProfile extends LockableProcedure implements LogFor
 
         $user->setNickName($data['nickName']);
         $user->setAvatarUrl($data['avatarUrl']);
-        $user->setLanguage(Language::tryFrom($data['language']) ?: Language::zh_CN);
+        $user->setLanguage(Language::tryFrom($data['language']) ?? Language::zh_CN);
         $this->entityManager->persist($user);
         $this->entityManager->flush();
 

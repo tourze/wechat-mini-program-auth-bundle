@@ -20,20 +20,20 @@ use Yiisoft\Json\Json;
 /**
  * 因为一般不会单独使用这个接口，所以其实作用不大了。。
  */
-#[MethodDoc('解密微信加密数据')]
-#[MethodTag('微信小程序')]
+#[MethodDoc(summary: '解密微信加密数据')]
+#[MethodTag(name: '微信小程序')]
 class WechatMiniProgramDecryptData extends LockableProcedure
 {
-    #[MethodParam('AppID')]
+    #[MethodParam(description: 'AppID')]
     public string $appId = '';
 
-    #[MethodParam('code')]
+    #[MethodParam(description: 'code')]
     public string $code;
 
-    #[MethodParam('iv')]
+    #[MethodParam(description: 'iv')]
     public string $iv;
 
-    #[MethodParam('encryptedData')]
+    #[MethodParam(description: 'encryptedData')]
     public string $encryptedData;
 
     public function __construct(

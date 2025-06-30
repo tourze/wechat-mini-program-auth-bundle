@@ -24,21 +24,21 @@ use WechatMiniProgramAuthBundle\Repository\PhoneNumberRepository;
 use WechatMiniProgramAuthBundle\Service\EncryptService;
 use Yiisoft\Json\Json;
 
-#[MethodTag('微信小程序')]
-#[MethodDoc('修改用户手机号码')]
-#[MethodExpose('ChangeWechatMiniProgramPhoneNumber')]
-#[IsGranted('IS_AUTHENTICATED_FULLY')]
+#[MethodTag(name: '微信小程序')]
+#[MethodDoc(summary: '修改用户手机号码')]
+#[MethodExpose(method: 'ChangeWechatMiniProgramPhoneNumber')]
+#[IsGranted(attribute: 'IS_AUTHENTICATED_FULLY')]
 #[Log]
-#[WithMonologChannel('procedure')]
+#[WithMonologChannel(channel: 'procedure')]
 class ChangeWechatMiniProgramPhoneNumber extends LockableProcedure
 {
-    #[MethodParam('当前sessionKey')]
+    #[MethodParam(description: '当前sessionKey')]
     public string $sessionKey = '';
 
-    #[MethodParam('加密数据')]
+    #[MethodParam(description: '加密数据')]
     public string $encryptedData = '';
 
-    #[MethodParam('向量值')]
+    #[MethodParam(description: '向量值')]
     public string $iv = '';
 
     public function __construct(
