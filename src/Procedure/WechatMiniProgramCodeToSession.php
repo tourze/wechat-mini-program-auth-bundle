@@ -12,7 +12,7 @@ use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
-use Tourze\AccessTokenBundle\Service\AccessTokenService;
+use Tourze\AccessTokenContracts\TokenServiceInterface;
 use Tourze\DoctrineUpsertBundle\Service\UpsertManager;
 use Tourze\JsonRPC\Core\Attribute\MethodDoc;
 use Tourze\JsonRPC\Core\Attribute\MethodExpose;
@@ -71,7 +71,7 @@ class WechatMiniProgramCodeToSession extends LockableProcedure
         private readonly Client $client,
         private readonly EventDispatcherInterface $eventDispatcher,
         private readonly UserManagerInterface $userLoader,
-        private readonly AccessTokenService $accessTokenService,
+        private readonly TokenServiceInterface $accessTokenService,
         private readonly RequestStack $requestStack,
         private readonly LoginService $loginService,
         private readonly Security $security,
