@@ -35,7 +35,7 @@
     "tourze/bundle-dependency": "1.*",
     "tourze/doctrine-indexed-bundle": "0.0.*",
     "tourze/doctrine-ip-bundle": "0.0.*",
-    "tourze/doctrine-resolve-target-entity-bundle": "0.0.*",
+    "tourze/doctrine-resolve-target-entity-bundle": "1.*",
     "tourze/doctrine-timestamp-bundle": "0.0.*",
     "tourze/doctrine-upsert-bundle": "0.1.*",
     "tourze/doctrine-user-bundle": "0.0.*",
