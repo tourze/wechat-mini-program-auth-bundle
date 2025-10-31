@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace WechatMiniProgramAuthBundle\Request;
 
 use WechatMiniProgramBundle\Request\WithAccountRequest;
@@ -19,6 +21,9 @@ class GetUserPhoneNumberRequest extends WithAccountRequest
         return '/wxa/business/getuserphonenumber';
     }
 
+    /**
+     * @return array<string, mixed>|null
+     */
     public function getRequestOptions(): ?array
     {
         return [

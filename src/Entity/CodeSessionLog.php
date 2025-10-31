@@ -1,53 +1,62 @@
 <?php
 
+declare(strict_types=1);
+
 namespace WechatMiniProgramAuthBundle\Entity;
 
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 use Tourze\DoctrineIndexedBundle\Attribute\IndexColumn;
+use Tourze\DoctrineIpBundle\Traits\CreatedFromIpAware;
+use Tourze\DoctrineTimestampBundle\Attribute\CreateTimeColumn;
+use Tourze\DoctrineTimestampBundle\Traits\CreateTimeAware;
 use Tourze\LockServiceBundle\Model\LockEntity;
 use Tourze\ScheduleEntityCleanBundle\Attribute\AsScheduleClean;
+use Tourze\WechatMiniProgramAppIDContracts\MiniProgramInterface;
 use WechatMiniProgramAuthBundle\Repository\CodeSessionLogRepository;
-use WechatMiniProgramBundle\Entity\Account;
 use WechatMiniProgramBundle\Entity\LaunchOptionsAware;
 
 #[AsScheduleClean(expression: '30 5 * * *', defaultKeepDay: 18, keepDayEnv: 'CODE_SESSION_PERSIST_DAY')]
 #[ORM\Entity(repositoryClass: CodeSessionLogRepository::class)]
 #[ORM\Table(name: 'wechat_mini_program_code_session_log', options: ['comment' => 'code2session日志'])]
-class CodeSessionLog implements LockEntity
-, \Stringable{
+class CodeSessionLog implements LockEntity, \Stringable
+{
     use LaunchOptionsAware;
+    use CreatedFromIpAware;
+    use CreateTimeAware;
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: Types::INTEGER, options: ['comment' => 'ID'])]
-    private ?int $id = 0;
+    private ?int $id = null;
 
-    #[ORM\ManyToOne(targetEntity: Account::class)]
+    #[ORM\ManyToOne(targetEntity: MiniProgramInterface::class)]
     #[ORM\JoinColumn(onDelete: 'SET NULL')]
-    private ?Account $account = null;
+    private ?MiniProgramInterface $account = null;
 
+    #[Assert\NotBlank]
+    #[Assert\Length(max: 100)]
     #[ORM\Column(type: Types::STRING, length: 100, unique: true, options: ['comment' => 'Code'])]
     private string $code;
 
+    #[Assert\Length(max: 255)]
     #[IndexColumn]
+    #[ORM\Column(type: Types::STRING, length: 255, nullable: true, options: ['comment' => 'OpenID'])]
     private ?string $openId = null;
 
+    #[Assert\Length(max: 100)]
     #[IndexColumn]
-    #[ORM\Column(type: Types::STRING, length: 100, options: ['comment' => 'UnionID'])]
+    #[ORM\Column(type: Types::STRING, length: 100, nullable: true, options: ['comment' => 'UnionID'])]
     private ?string $unionId = null;
 
-    #[ORM\Column(type: Types::STRING, length: 120, options: ['comment' => 'SessionKey'])]
+    #[Assert\Length(max: 120)]
+    #[ORM\Column(type: Types::STRING, length: 120, nullable: true, options: ['comment' => 'SessionKey'])]
     private ?string $sessionKey = null;
 
+    #[Assert\Length(max: 65535)]
+    #[ORM\Column(type: Types::TEXT, nullable: true, options: ['comment' => '原始数据'])]
     private ?string $rawData = null;
-
-    #[ORM\Column(length: 45, nullable: true, options: ['comment' => '创建时IP'])]
-    private ?string $createdFromIp = null;
-
-    #[IndexColumn]
-    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true, options: ['comment' => '创建时间'])]
-    private ?\DateTimeImmutable $createTime = null;
 
     public function getId(): ?int
     {
@@ -59,11 +68,9 @@ class CodeSessionLog implements LockEntity
         return $this->openId;
     }
 
-    public function setOpenId(string $openId): self
+    public function setOpenId(?string $openId): void
     {
         $this->openId = $openId;
-
-        return $this;
     }
 
     public function getRawData(): ?string
@@ -71,11 +78,9 @@ class CodeSessionLog implements LockEntity
         return $this->rawData;
     }
 
-    public function setRawData(string $rawData): self
+    public function setRawData(?string $rawData): void
     {
         $this->rawData = $rawData;
-
-        return $this;
     }
 
     public function getCode(): string
@@ -83,11 +88,9 @@ class CodeSessionLog implements LockEntity
         return $this->code;
     }
 
-    public function setCode(string $code): self
+    public function setCode(string $code): void
     {
         $this->code = $code;
-
-        return $this;
     }
 
     public function getUnionId(): ?string
@@ -95,11 +98,9 @@ class CodeSessionLog implements LockEntity
         return $this->unionId;
     }
 
-    public function setUnionId(string $unionId): self
+    public function setUnionId(?string $unionId): void
     {
         $this->unionId = $unionId;
-
-        return $this;
     }
 
     public function getSessionKey(): ?string
@@ -107,45 +108,19 @@ class CodeSessionLog implements LockEntity
         return $this->sessionKey;
     }
 
-    public function setSessionKey(string $sessionKey): self
+    public function setSessionKey(?string $sessionKey): void
     {
         $this->sessionKey = $sessionKey;
-
-        return $this;
     }
 
-    public function getAccount(): ?Account
+    public function getAccount(): ?MiniProgramInterface
     {
         return $this->account;
     }
 
-    public function setAccount(?Account $account): self
+    public function setAccount(?MiniProgramInterface $account): void
     {
         $this->account = $account;
-
-        return $this;
-    }
-
-    public function getCreatedFromIp(): ?string
-    {
-        return $this->createdFromIp;
-    }
-
-    public function setCreatedFromIp(?string $createdFromIp): void
-    {
-        $this->createdFromIp = $createdFromIp;
-    }
-
-    public function setCreateTime(?\DateTimeImmutable $createdAt): self
-    {
-        $this->createTime = $createdAt;
-
-        return $this;
-    }
-
-    public function getCreateTime(): ?\DateTimeImmutable
-    {
-        return $this->createTime;
     }
 
     public function retrieveLockResource(): string
@@ -153,9 +128,8 @@ class CodeSessionLog implements LockEntity
         return "wechat_mini_program_code_session_log_{$this->getOpenId()}";
     }
 
-
     public function __toString(): string
     {
-        return sprintf('%s #%s', 'CodeSessionLog', $this->id ?? 'new');
+        return sprintf('CodeSessionLog #%s', $this->id ?? 'new');
     }
 }

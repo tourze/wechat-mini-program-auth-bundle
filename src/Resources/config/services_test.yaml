@@ -1,0 +1,16 @@
+services:
+  # default configuration for services in *this* file
+  _defaults:
+    autowire: true      # Automatically injects dependencies in your services.
+    autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
+    public: true
+
+  WechatMiniProgramAuthBundle\DataFixtures\:
+    resource: '../../DataFixtures/'
+
+  # Test services for wechat-mini-program-auth-bundle tests
+  WechatMiniProgramAuthBundle\Tests\Service\TestUserLoader:
+    autowire: true
+    public: true
+    tags:
+      - { name: 'test.service' }

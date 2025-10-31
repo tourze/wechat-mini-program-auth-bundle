@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace WechatMiniProgramAuthBundle\Enum;
 
 use Tourze\EnumExtra\Itemable;
@@ -9,7 +11,7 @@ use Tourze\EnumExtra\Selectable;
 use Tourze\EnumExtra\SelectTrait;
 
 /**
- * 显示 country，province，city 所用的语言。强制返回 “zh_CN”
+ * 显示 country，province，city 所用的语言。强制返回 "zh_CN"
  */
 enum Language: string implements Labelable, Itemable, Selectable
 {

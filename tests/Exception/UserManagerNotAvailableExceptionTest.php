@@ -1,28 +1,34 @@
 <?php
 
-namespace WechatMiniProgramAuthBundle\Tests\Unit\Exception;
+declare(strict_types=1);
 
-use PHPUnit\Framework\TestCase;
-use RuntimeException;
+namespace WechatMiniProgramAuthBundle\Tests\Exception;
+
+use PHPUnit\Framework\Attributes\CoversClass;
+use Tourze\PHPUnitBase\AbstractExceptionTestCase;
 use WechatMiniProgramAuthBundle\Exception\UserManagerNotAvailableException;
 
-class UserManagerNotAvailableExceptionTest extends TestCase
+/**
+ * @internal
+ */
+#[CoversClass(UserManagerNotAvailableException::class)]
+final class UserManagerNotAvailableExceptionTest extends AbstractExceptionTestCase
 {
-    public function testExceptionInheritance()
+    protected function setUp(): void
     {
-        $exception = new UserManagerNotAvailableException();
-        $this->assertInstanceOf(RuntimeException::class, $exception);
-        $this->assertInstanceOf(\Exception::class, $exception);
+        parent::setUp();
+
+        // 测试不需要额外的设置
     }
 
-    public function testExceptionWithMessage()
+    public function testExceptionWithMessage(): void
     {
         $message = 'UserManager is not available';
         $exception = new UserManagerNotAvailableException($message);
         $this->assertEquals($message, $exception->getMessage());
     }
 
-    public function testExceptionWithMessageAndCode()
+    public function testExceptionWithMessageAndCode(): void
     {
         $message = 'UserManager is not available';
         $code = 500;
@@ -31,18 +37,18 @@ class UserManagerNotAvailableExceptionTest extends TestCase
         $this->assertEquals($code, $exception->getCode());
     }
 
-    public function testExceptionWithPrevious()
+    public function testExceptionWithPrevious(): void
     {
         $previous = new \Exception('Previous exception');
         $exception = new UserManagerNotAvailableException('Test message', 0, $previous);
         $this->assertEquals($previous, $exception->getPrevious());
     }
 
-    public function testExceptionCanBeThrown()
+    public function testExceptionCanBeThrown(): void
     {
         $this->expectException(UserManagerNotAvailableException::class);
         $this->expectExceptionMessage('UserManager not available');
-        
+
         throw new UserManagerNotAvailableException('UserManager not available');
     }
 }

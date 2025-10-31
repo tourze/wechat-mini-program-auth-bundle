@@ -1,100 +1,131 @@
 <?php
 
+declare(strict_types=1);
+
 namespace WechatMiniProgramAuthBundle\Tests\Procedure;
 
-use Doctrine\ORM\EntityManagerInterface;
-use PHPUnit\Framework\TestCase;
-use Psr\Log\LoggerInterface;
-use Symfony\Bundle\SecurityBundle\Security;
-use Symfony\Component\Security\Core\User\UserInterface;
-use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
+use Symfony\Component\DependencyInjection\Container;
 use Tourze\JsonRPC\Core\Exception\ApiException;
-use Tourze\WechatMiniProgramAppIDContracts\MiniProgramInterface;
-use Tourze\WechatMiniProgramUserContracts\UserLoaderInterface;
+use Tourze\JsonRPC\Core\Model\JsonRpcRequest;
+use Tourze\JsonRPC\Core\Tests\AbstractProcedureTestCase;
 use WechatMiniProgramAuthBundle\Entity\User;
 use WechatMiniProgramAuthBundle\Procedure\UploadWechatMiniProgramPhoneNumber;
-use WechatMiniProgramAuthBundle\Repository\PhoneNumberRepository;
+use WechatMiniProgramAuthBundle\Tests\Service\TestUserLoader;
+use WechatMiniProgramBundle\Entity\Account;
 use WechatMiniProgramBundle\Service\Client;
 
-class UploadWechatMiniProgramPhoneNumberTest extends TestCase
+/**
+ * @internal
+ */
+#[CoversClass(UploadWechatMiniProgramPhoneNumber::class)]
+#[RunTestsInSeparateProcesses]
+final class UploadWechatMiniProgramPhoneNumberTest extends AbstractProcedureTestCase
 {
-    private Client $client;
-    private UserLoaderInterface $userLoader;
-    private PhoneNumberRepository $phoneNumberRepository;
-    private EventDispatcherInterface $eventDispatcher;
-    private Security $security;
-    private LoggerInterface $logger;
-    private EntityManagerInterface $entityManager;
     private UploadWechatMiniProgramPhoneNumber $procedure;
 
-    protected function setUp(): void
+    protected function onSetUp(): void
     {
-        $this->client = $this->createMock(Client::class);
-        $this->userLoader = $this->createMock(UserLoaderInterface::class);
-        $this->phoneNumberRepository = $this->createMock(PhoneNumberRepository::class);
-        $this->eventDispatcher = $this->createMock(EventDispatcherInterface::class);
-        $this->security = $this->createMock(Security::class);
-        $this->logger = $this->createMock(LoggerInterface::class);
-        $this->entityManager = $this->createMock(EntityManagerInterface::class);
-        
-        $this->procedure = new UploadWechatMiniProgramPhoneNumber(
-            $this->userLoader,
-            $this->phoneNumberRepository,
-            $this->client,
-            $this->eventDispatcher,
-            $this->security,
-            $this->logger,
-            $this->entityManager
-        );
+        // 在服务初始化之前，我们不获取 procedure，留到各个测试方法中按需获取
     }
 
-    public function testExecuteUserNotFound(): void
+    public function testGenerateFormattedLogText(): void
     {
-        $this->procedure->code = 'test_code';
+        $this->procedure = self::getService(UploadWechatMiniProgramPhoneNumber::class);
+        $reflection = new \ReflectionClass(JsonRpcRequest::class);
+        $request = $reflection->newInstanceWithoutConstructor();
+        $result = $this->procedure->generateFormattedLogText($request);
+        $this->assertEquals('授权微信小程序手机号码', $result);
+    }
 
-        $bizUser = $this->createMock(UserInterface::class);
-        $bizUser->expects(self::once())
-            ->method('getUserIdentifier')
-            ->willReturn('test_user_id');
-
-        $this->security->expects(self::once())
-            ->method('getUser')
-            ->willReturn($bizUser);
-
-        $this->userLoader->expects(self::once())
-            ->method('loadUserByOpenId')
-            ->with('test_user_id')
-            ->willReturn(null);
-
+    public function testExecuteWithUnauthenticatedUser(): void
+    {
+        $this->procedure = self::getService(UploadWechatMiniProgramPhoneNumber::class);
         $this->expectException(ApiException::class);
-        $this->expectExceptionMessage('找不到微信小程序用户信息');
+        $this->expectExceptionMessage('用户未登录');
 
         $this->procedure->execute();
     }
 
-    public function testExecuteWithInvalidMiniProgram(): void
+    public function testExecuteWithAuthenticatedUser(): void
     {
-        $this->procedure->code = 'test_code';
+        // Mock WeChat client 在服务初始化之前
+        $mockClient = $this->createMock(Client::class);
+        $mockClient->method('request')
+            ->willReturn([
+                'phone_info' => [
+                    'phoneNumber' => '13800138000',
+                    'purePhoneNumber' => '13800138000',
+                    'countryCode' => '86',
+                    'watermark' => [
+                        'timestamp' => time(),
+                        'appid' => 'test-app-id',
+                    ],
+                ],
+            ])
+        ;
 
-        $bizUser = $this->createMock(UserInterface::class);
-        $bizUser->expects(self::once())
-            ->method('getUserIdentifier')
-            ->willReturn('test_user_id');
+        // 在服务初始化之前设置 Mock
+        /** @var Container $container */
+        /** @phpstan-ignore-next-line */
+        $container = $this->getContainer();
+        $container->set(Client::class, $mockClient);
 
-        $this->security->expects(self::once())
-            ->method('getUser')
-            ->willReturn($bizUser);
+        // 现在获取 procedure 服务（此时会使用我们的 Mock Client）
+        $this->procedure = self::getService(UploadWechatMiniProgramPhoneNumber::class);
 
+        // 设置必要的参数
+        $this->procedure->code = 'test-code-123';
+
+        // 创建系统用户，用户标识符需要与 wechat 用户的 openId 匹配
+        $openId = 'test-open-id-789';
+        $sysUser = $this->createAdminUser($openId);
+
+        // 设置认证用户
+        $this->setAuthenticatedUser($sysUser);
+
+        // 创建微信小程序账户
+        $account = new Account();
+        $account->setName('Test Account');
+        $account->setAppId('test-app-id');
+        $account->setAppSecret('test-app-secret');
+        $account->setValid(true);
+        $this->persistAndFlush($account);
+
+        // 创建微信小程序用户
         $wechatUser = new User();
-        $this->userLoader->expects(self::once())
-            ->method('loadUserByOpenId')
-            ->with('test_user_id')
-            ->willReturn($wechatUser);
+        $wechatUser->setOpenId($openId);
+        $wechatUser->setUnionId('test-union-id-789');
+        $wechatUser->setNickName('Test Phone User');
+        $wechatUser->setUser($sysUser);
+        $wechatUser->setAccount($account);
+        $this->persistAndFlush($wechatUser);
 
-        $wechatUser->setAccount(null);
+        // 将用户添加到 TestUserLoader 中，以便 userLoader 能找到用户
+        $testUserLoader = self::getService(TestUserLoader::class);
+        $this->assertInstanceOf(TestUserLoader::class, $testUserLoader);
+        $testUserLoader->addUser($wechatUser);
+
+        $result = $this->procedure->execute();
+
+        $this->assertIsArray($result);
+        $this->assertArrayHasKey('phoneNumber', $result);
+        $this->assertEquals('13800138000', $result['phoneNumber']);
+    }
+
+    public function testExecuteWithUserNotFound(): void
+    {
+        $this->procedure = self::getService(UploadWechatMiniProgramPhoneNumber::class);
+
+        // 创建系统用户但不关联微信小程序用户
+        $sysUser = $this->createAdminUser('test-no-phone-user');
+
+        // 设置认证用户
+        $this->setAuthenticatedUser($sysUser);
 
         $this->expectException(ApiException::class);
-        $this->expectExceptionMessage('该用户没有绑定微信小程序');
+        $this->expectExceptionMessage('找不到微信小程序用户信息');
 
         $this->procedure->execute();
     }

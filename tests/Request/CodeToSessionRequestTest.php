@@ -1,16 +1,25 @@
 <?php
 
+declare(strict_types=1);
+
 namespace WechatMiniProgramAuthBundle\Tests\Request;
 
-use PHPUnit\Framework\TestCase;
+use HttpClientBundle\Tests\Request\RequestTestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
 use WechatMiniProgramAuthBundle\Request\CodeToSessionRequest;
 
-class CodeToSessionRequestTest extends TestCase
+/**
+ * @internal
+ */
+#[CoversClass(CodeToSessionRequest::class)]
+final class CodeToSessionRequestTest extends RequestTestCase
 {
     private CodeToSessionRequest $request;
 
     protected function setUp(): void
     {
+        parent::setUp();
+
         $this->request = new CodeToSessionRequest();
     }
 
@@ -18,13 +27,13 @@ class CodeToSessionRequestTest extends TestCase
     {
         $this->request->setJsCode('test_js_code');
         self::assertSame('test_js_code', $this->request->getJsCode());
-        
+
         $this->request->setAppId('test_app_id');
         self::assertSame('test_app_id', $this->request->getAppId());
-        
+
         $this->request->setSecret('test_secret');
         self::assertSame('test_secret', $this->request->getSecret());
-        
+
         $this->request->setGrantType('test_grant_type');
         self::assertSame('test_grant_type', $this->request->getGrantType());
     }
@@ -49,10 +58,12 @@ class CodeToSessionRequestTest extends TestCase
         $this->request->setAppId('test_app_id');
         $this->request->setSecret('test_secret');
         $this->request->setJsCode('test_js_code');
-        
+
         $options = $this->request->getRequestOptions();
-        
+        self::assertIsArray($options, 'Request options should be an array');
+
         self::assertArrayHasKey('query', $options);
+        self::assertIsArray($options['query']);
         self::assertSame('test_app_id', $options['query']['appid']);
         self::assertSame('test_secret', $options['query']['secret']);
         self::assertSame('test_js_code', $options['query']['js_code']);
@@ -63,7 +74,7 @@ class CodeToSessionRequestTest extends TestCase
     {
         $this->request->setAppId('test_app_id');
         $this->request->setJsCode('test_js_code');
-        
+
         self::assertSame('CodeToSessionRequest-test_app_id-test_js_code', $this->request->getCacheKey());
     }
 

@@ -1,26 +1,34 @@
 <?php
 
-namespace WechatMiniProgramAuthBundle\Tests\Unit\Exception;
+declare(strict_types=1);
 
-use PHPUnit\Framework\TestCase;
+namespace WechatMiniProgramAuthBundle\Tests\Exception;
+
+use PHPUnit\Framework\Attributes\CoversClass;
+use Tourze\PHPUnitBase\AbstractExceptionTestCase;
 use WechatMiniProgramAuthBundle\Exception\DecryptException;
 
-class DecryptExceptionTest extends TestCase
+/**
+ * @internal
+ */
+#[CoversClass(DecryptException::class)]
+final class DecryptExceptionTest extends AbstractExceptionTestCase
 {
-    public function testExceptionInheritance()
+    protected function setUp(): void
     {
-        $exception = new DecryptException();
-        $this->assertInstanceOf(\Exception::class, $exception);
+        parent::setUp();
+
+        // 测试不需要额外的设置
     }
 
-    public function testExceptionWithMessage()
+    public function testExceptionWithMessage(): void
     {
         $message = 'Test decrypt exception message';
         $exception = new DecryptException($message);
         $this->assertEquals($message, $exception->getMessage());
     }
 
-    public function testExceptionWithMessageAndCode()
+    public function testExceptionWithMessageAndCode(): void
     {
         $message = 'Test decrypt exception message';
         $code = 500;
@@ -29,18 +37,18 @@ class DecryptExceptionTest extends TestCase
         $this->assertEquals($code, $exception->getCode());
     }
 
-    public function testExceptionWithPrevious()
+    public function testExceptionWithPrevious(): void
     {
         $previous = new \RuntimeException('Previous exception');
         $exception = new DecryptException('Test message', 0, $previous);
         $this->assertEquals($previous, $exception->getPrevious());
     }
 
-    public function testExceptionCanBeThrown()
+    public function testExceptionCanBeThrown(): void
     {
         $this->expectException(DecryptException::class);
         $this->expectExceptionMessage('Test exception');
-        
+
         throw new DecryptException('Test exception');
     }
 }

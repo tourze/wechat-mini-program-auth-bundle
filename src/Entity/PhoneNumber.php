@@ -1,17 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 namespace WechatMiniProgramAuthBundle\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Stringable;
+use Symfony\Component\Validator\Constraints as Assert;
 use Tourze\DoctrineIndexedBundle\Attribute\IndexColumn;
-use Tourze\DoctrineIpBundle\Attribute\CreateIpColumn;
-use Tourze\DoctrineIpBundle\Attribute\UpdateIpColumn;
+use Tourze\DoctrineIpBundle\Traits\IpTraceableAware;
 use Tourze\DoctrineTimestampBundle\Traits\TimestampableAware;
-use Tourze\WechatMiniProgramUserContracts\UserInterface;
 use WechatMiniProgramAuthBundle\Repository\PhoneNumberRepository;
 use WechatMiniProgramBundle\Entity\LaunchOptionsAware;
 
@@ -23,45 +23,54 @@ use WechatMiniProgramBundle\Entity\LaunchOptionsAware;
  */
 #[ORM\Entity(repositoryClass: PhoneNumberRepository::class)]
 #[ORM\Table(name: 'wechat_mini_program_phone_number', options: ['comment' => '授权手机号'])]
-class PhoneNumber implements Stringable
+class PhoneNumber implements \Stringable
 {
     use TimestampableAware;
     use LaunchOptionsAware;
+    use IpTraceableAware;
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: Types::INTEGER, options: ['comment' => 'ID'])]
-    private ?int $id = 0;
+    private ?int $id = null;
 
     /**
-     * @var Collection<User>
+     * @var Collection<int, User>
      */
     #[ORM\ManyToMany(targetEntity: User::class, inversedBy: 'phoneNumbers', cascade: ['persist'], fetch: 'EXTRA_LAZY')]
+    #[ORM\JoinTable(
+        name: 'wechat_mini_program_phone_number_user',
+        joinColumns: [new ORM\JoinColumn(name: 'phone_number_id', referencedColumnName: 'id')],
+        inverseJoinColumns: [new ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id')]
+    )]
     private Collection $users;
 
-    /**
-     * 用户绑定的手机号（国外手机号会有区号）.
-     */
+    #[Assert\NotBlank]
+    #[Assert\Regex(pattern: '/^\+?[1-9]\d{1,14}$/')]
+    #[Assert\Length(max: 255)]
     #[IndexColumn]
+    #[ORM\Column(type: Types::STRING, length: 255, options: ['comment' => '用户绑定的手机号（国外手机号会有区号）'])]
     private ?string $phoneNumber = null;
 
+    #[Assert\Regex(pattern: '/^\d{7,15}$/')]
+    #[Assert\Length(max: 40)]
     #[ORM\Column(type: Types::STRING, length: 40, nullable: true, options: ['comment' => '没有区号的手机号'])]
     private ?string $purePhoneNumber = null;
 
+    #[Assert\Length(max: 100)]
     #[ORM\Column(type: Types::STRING, length: 100, nullable: true, options: ['comment' => '区号'])]
     private ?string $countryCode = null;
 
+    /**
+     * @var array<string, mixed>|null
+     */
+    #[Assert\Type(type: 'array')]
     #[ORM\Column(type: Types::JSON, nullable: true, options: ['comment' => '数据水印'])]
     private ?array $watermark = [];
 
-#[ORM\Column(type: Types::TEXT, nullable: true, options: ['comment' => '字段说明'])]
+    #[Assert\Length(max: 65535)]
+    #[ORM\Column(type: Types::TEXT, nullable: true, options: ['comment' => '字段说明'])]
     private ?string $rawData = null;
-
-    #[CreateIpColumn]
-    private ?string $createdFromIp = null;
-
-    #[UpdateIpColumn]
-    private ?string $updatedFromIp = null;
 
     public function __construct()
     {
@@ -81,20 +90,16 @@ class PhoneNumber implements Stringable
         return $this->users;
     }
 
-    public function addUser(UserInterface $user): self
+    public function addUser(User $user): void
     {
         if (!$this->users->contains($user)) {
-            $this->users[] = $user;
+            $this->users->add($user);
         }
-
-        return $this;
     }
 
-    public function removeUser(UserInterface $user): self
+    public function removeUser(User $user): void
     {
         $this->users->removeElement($user);
-
-        return $this;
     }
 
     public function getPhoneNumber(): ?string
@@ -102,11 +107,9 @@ class PhoneNumber implements Stringable
         return $this->phoneNumber;
     }
 
-    public function setPhoneNumber(string $phoneNumber): self
+    public function setPhoneNumber(string $phoneNumber): void
     {
         $this->phoneNumber = $phoneNumber;
-
-        return $this;
     }
 
     public function getPurePhoneNumber(): ?string
@@ -114,11 +117,9 @@ class PhoneNumber implements Stringable
         return $this->purePhoneNumber;
     }
 
-    public function setPurePhoneNumber(?string $purePhoneNumber): self
+    public function setPurePhoneNumber(?string $purePhoneNumber): void
     {
         $this->purePhoneNumber = $purePhoneNumber;
-
-        return $this;
     }
 
     public function getCountryCode(): ?string
@@ -126,23 +127,25 @@ class PhoneNumber implements Stringable
         return $this->countryCode;
     }
 
-    public function setCountryCode(?string $countryCode): self
+    public function setCountryCode(?string $countryCode): void
     {
         $this->countryCode = $countryCode;
-
-        return $this;
     }
 
+    /**
+     * @return array<string, mixed>|null
+     */
     public function getWatermark(): ?array
     {
         return $this->watermark;
     }
 
-    public function setWatermark(?array $watermark): self
+    /**
+     * @param array<string, mixed>|null $watermark
+     */
+    public function setWatermark(?array $watermark): void
     {
         $this->watermark = $watermark;
-
-        return $this;
     }
 
     public function getRawData(): ?string
@@ -150,38 +153,13 @@ class PhoneNumber implements Stringable
         return $this->rawData;
     }
 
-    public function setRawData(?string $rawData): self
+    public function setRawData(?string $rawData): void
     {
         $this->rawData = $rawData;
-
-        return $this;
     }
 
-    public function getCreatedFromIp(): ?string
-    {
-        return $this->createdFromIp;
-    }
-
-    public function setCreatedFromIp(?string $createdFromIp): self
-    {
-        $this->createdFromIp = $createdFromIp;
-
-        return $this;
-    }
-
-    public function getUpdatedFromIp(): ?string
-    {
-        return $this->updatedFromIp;
-    }
-
-    public function setUpdatedFromIp(?string $updatedFromIp): self
-    {
-        $this->updatedFromIp = $updatedFromIp;
-
-        return $this;
-    }
     public function __toString(): string
     {
-        return (string) $this->id;
+        return (string) ($this->id ?? 'new');
     }
 }

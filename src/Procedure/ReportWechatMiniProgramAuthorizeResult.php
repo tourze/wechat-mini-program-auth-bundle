@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace WechatMiniProgramAuthBundle\Procedure;
 
 use Doctrine\ORM\EntityManagerInterface;
@@ -12,8 +14,7 @@ use Tourze\JsonRPC\Core\Attribute\MethodTag;
 use Tourze\JsonRPC\Core\Exception\ApiException;
 use Tourze\JsonRPCLockBundle\Procedure\LockableProcedure;
 use Tourze\JsonRPCLogBundle\Attribute\Log;
-use Tourze\WechatMiniProgramUserContracts\UserLoaderInterface;
-use WechatMiniProgramAuthBundle\Entity\User;
+use WechatMiniProgramAuthBundle\Repository\UserRepository;
 
 /**
  * 因为现在在 code2session 时就必然当做登录处理了，那么这里就肯定要登录啦。。
@@ -27,25 +28,29 @@ use WechatMiniProgramAuthBundle\Entity\User;
 #[Log]
 class ReportWechatMiniProgramAuthorizeResult extends LockableProcedure
 {
+    /** @var array<string> */
     #[MethodParam(description: '已授权scope列表')]
     public array $scopes;
 
     public function __construct(
-        private readonly UserLoaderInterface $userLoader,
+        private readonly UserRepository $userLoader,
         private readonly EntityManagerInterface $entityManager,
         private readonly Security $security,
     ) {
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function execute(): array
     {
-        $user = $this->userLoader->loadUserByOpenId($this->security->getUser()->getUserIdentifier());
-        if ($user === null) {
-            throw new ApiException('找不到微信小程序用户信息');
+        $sysUser = $this->security->getUser();
+        if (null === $sysUser) {
+            throw new ApiException('用户未登录');
         }
-
-        if (!$user instanceof User) {
-            throw new ApiException('用户类型不正确');
+        $user = $this->userLoader->getBySysUser($sysUser);
+        if (null === $user) {
+            throw new ApiException('找不到微信小程序用户信息');
         }
 
         $user->setAuthorizeScopes($this->scopes);
@@ -57,6 +62,9 @@ class ReportWechatMiniProgramAuthorizeResult extends LockableProcedure
         ];
     }
 
+    /**
+     * @return array<string, mixed>|null
+     */
     public static function getMockResult(): ?array
     {
         return [

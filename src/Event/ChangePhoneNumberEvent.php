@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace WechatMiniProgramAuthBundle\Event;
 
 use Tourze\UserEventBundle\Event\UserInteractionEvent;
@@ -11,13 +13,22 @@ class ChangePhoneNumberEvent extends UserInteractionEvent
 {
     use LaunchOptionsAware;
 
+    /**
+     * @var array<string, mixed>
+     */
     private array $result = [];
 
+    /**
+     * @return array<string, mixed>
+     */
     public function getResult(): array
     {
         return $this->result;
     }
 
+    /**
+     * @param array<string, mixed> $result
+     */
     public function setResult(array $result): void
     {
         $this->result = $result;

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace WechatMiniProgramAuthBundle\Procedure;
 
 use Symfony\Bundle\SecurityBundle\Security;
@@ -12,7 +14,7 @@ use Tourze\JsonRPCLockBundle\Procedure\LockableProcedure;
 use WechatMiniProgramAuthBundle\Repository\UserRepository;
 
 #[MethodTag(name: '微信小程序')]
-#[MethodDoc(summary: '获取用户信息')]
+#[MethodDoc(summary: '获取微信小程序用户信息')]
 #[MethodExpose(method: 'GetCurrentWechatMiniProgramUser')]
 #[IsGranted(attribute: 'IS_AUTHENTICATED_FULLY')]
 class GetCurrentWechatMiniProgramUser extends LockableProcedure
@@ -23,10 +25,17 @@ class GetCurrentWechatMiniProgramUser extends LockableProcedure
     ) {
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function execute(): array
     {
-        $user = $this->userRepository->getBySysUser($this->security->getUser());
-        if ($user === null) {
+        $sysUser = $this->security->getUser();
+        if (null === $sysUser) {
+            throw new ApiException('用户未登录');
+        }
+        $user = $this->userRepository->getBySysUser($sysUser);
+        if (null === $user) {
             throw new ApiException('找不到微信小程序用户信息');
         }
 

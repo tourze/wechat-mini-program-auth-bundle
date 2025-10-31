@@ -1,11 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace WechatMiniProgramAuthBundle\Procedure;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Monolog\Attribute\WithMonologChannel;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Tourze\JsonRPC\Core\Attribute\MethodDoc;
@@ -24,6 +27,7 @@ use WechatMiniProgramAuthBundle\Entity\User;
 use WechatMiniProgramAuthBundle\Event\GetPhoneNumberEvent;
 use WechatMiniProgramAuthBundle\Repository\PhoneNumberRepository;
 use WechatMiniProgramAuthBundle\Request\GetUserPhoneNumberRequest;
+use WechatMiniProgramBundle\Entity\Account;
 use WechatMiniProgramBundle\Procedure\LaunchOptionsAware;
 use WechatMiniProgramBundle\Service\Client;
 use Yiisoft\Json\Json;
@@ -45,6 +49,9 @@ class UploadWechatMiniProgramPhoneNumber extends LockableProcedure implements Lo
     #[MethodParam(description: 'getPhoneNumber的授权code')]
     public string $code = '';
 
+    /**
+     * @var string 这里应该换成UTM风格的参数
+     */
     #[MethodParam(description: '注册来源')]
     public string $source = '';
 
@@ -59,11 +66,37 @@ class UploadWechatMiniProgramPhoneNumber extends LockableProcedure implements Lo
     ) {
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function execute(): array
     {
         $bizUser = $this->security->getUser();
+        if (null === $bizUser) {
+            throw new ApiException('用户未登录');
+        }
+
+        $wechatUser = $this->getValidatedWechatUser($bizUser);
+        $phoneInfo = $this->fetchPhoneInfo($wechatUser);
+        $phoneNumber = $this->savePhoneNumber($phoneInfo);
+
+        $result = [
+            'phoneNumber' => $phoneNumber->getPhoneNumber(),
+        ];
+
+        $event = $this->createAndDispatchEvent($bizUser, $wechatUser, $phoneNumber, $result);
+
+        $phoneNumber->addUser($wechatUser);
+        $this->entityManager->persist($phoneNumber);
+        $this->entityManager->flush();
+
+        return $event->getResult();
+    }
+
+    private function getValidatedWechatUser(UserInterface $bizUser): User
+    {
         $wechatUser = $this->userLoader->loadUserByOpenId($bizUser->getUserIdentifier());
-        if ($wechatUser === null) {
+        if (null === $wechatUser) {
             throw new ApiException('找不到微信小程序用户信息');
         }
 
@@ -71,46 +104,108 @@ class UploadWechatMiniProgramPhoneNumber extends LockableProcedure implements Lo
             throw new ApiException('用户类型不正确');
         }
 
-        if (empty($this->code)) {
+        if ('' === $this->code) {
             throw new ApiException('已不支持旧方式获取手机号码，请升级微信版本');
         }
 
-        if ($wechatUser->getAccount() === null) {
+        $account = $wechatUser->getAccount();
+        if (null === $account) {
             throw new ApiException('该用户没有绑定微信小程序');
         }
 
+        if (!$account instanceof Account) {
+            throw new ApiException('账户类型不正确');
+        }
+
+        return $wechatUser;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function fetchPhoneInfo(User $wechatUser): array
+    {
+        $account = $wechatUser->getAccount();
+        if (null === $account) {
+            throw new ApiException('账户信息缺失');
+        }
+
         $request = new GetUserPhoneNumberRequest();
-        $request->setAccount($wechatUser->getAccount());
+        $request->setAccount($account);
         $request->setCode($this->code);
+        /** @var array<string, mixed> $res */
         $res = $this->client->request($request);
-        $this->logger->debug('远程获取微信手机号码信息', $res);
-        if (!isset($res['phone_info'])) {
+        $this->logger->debug('远程获取微信手机号码信息', ['response' => $res]);
+
+        if (!isset($res['phone_info']) || !is_array($res['phone_info'])) {
             throw new ApiException('找不到手机号码信息');
         }
 
-        $res = $res['phone_info'];
+        /** @var array<string, mixed> $phoneInfo */
+        $phoneInfo = $res['phone_info'];
 
-        // 保存手机号码
-        $phoneNumber = $this->phoneNumberRepository->findOneBy([
-            'phoneNumber' => $res['phoneNumber'],
-        ]);
-        if ($phoneNumber === null) {
-            $phoneNumber = new PhoneNumber();
-            $phoneNumber->setPhoneNumber($res['phoneNumber']);
+        if (!isset($phoneInfo['phoneNumber']) || !is_string($phoneInfo['phoneNumber'])) {
+            throw new ApiException('手机号码格式不正确');
         }
 
-        $phoneNumber->setPurePhoneNumber($res['purePhoneNumber']);
-        $phoneNumber->setCountryCode($res['countryCode']);
-        $phoneNumber->setWatermark($res['watermark']);
-        $phoneNumber->setRawData(Json::encode($res));
+        $phoneInfo['rawData'] = Json::encode($res);
+
+        return $phoneInfo;
+    }
+
+    /**
+     * @param array<string, mixed> $phoneInfo
+     */
+    private function savePhoneNumber(array $phoneInfo): PhoneNumber
+    {
+        // 确保 phoneNumber 字段存在且是字符串
+        if (!isset($phoneInfo['phoneNumber']) || !is_string($phoneInfo['phoneNumber'])) {
+            throw new ApiException('手机号码字段缺失或类型错误');
+        }
+
+        $phoneNumber = $this->phoneNumberRepository->findOneBy([
+            'phoneNumber' => $phoneInfo['phoneNumber'],
+        ]);
+        if (null === $phoneNumber) {
+            $phoneNumber = new PhoneNumber();
+            $phoneNumber->setPhoneNumber($phoneInfo['phoneNumber']);
+        }
+
+        $phoneNumber->setPurePhoneNumber(
+            isset($phoneInfo['purePhoneNumber']) && is_string($phoneInfo['purePhoneNumber'])
+                ? $phoneInfo['purePhoneNumber']
+                : null
+        );
+        $phoneNumber->setCountryCode(
+            isset($phoneInfo['countryCode']) && is_string($phoneInfo['countryCode'])
+                ? $phoneInfo['countryCode']
+                : null
+        );
+
+        // 处理 watermark 字段，确保是 array<string, mixed> 类型
+        $watermark = null;
+        if (isset($phoneInfo['watermark']) && is_array($phoneInfo['watermark'])) {
+            /** @var array<string, mixed> $watermark */
+            $watermark = $phoneInfo['watermark'];
+        }
+        $phoneNumber->setWatermark($watermark);
+
+        // 确保 rawData 是字符串
+        $rawData = isset($phoneInfo['rawData']) && is_string($phoneInfo['rawData'])
+            ? $phoneInfo['rawData']
+            : null;
+        $phoneNumber->setRawData($rawData);
         $phoneNumber->setLaunchOptions($this->launchOptions);
         $phoneNumber->setEnterOptions($this->enterOptions);
 
-        $result = [
-            'phoneNumber' => $phoneNumber->getPhoneNumber(),
-            // '__message' => '恭喜你，授权注册成功 ！',
-        ];
+        return $phoneNumber;
+    }
 
+    /**
+     * @param array<string, mixed> $result
+     */
+    private function createAndDispatchEvent(UserInterface $bizUser, User $wechatUser, PhoneNumber $phoneNumber, array $result): GetPhoneNumberEvent
+    {
         $event = new GetPhoneNumberEvent();
         $event->setSender($bizUser);
         $event->setReceiver(SystemUser::instance());
@@ -122,12 +217,7 @@ class UploadWechatMiniProgramPhoneNumber extends LockableProcedure implements Lo
         $event->setResult($result);
         $this->eventDispatcher->dispatch($event);
 
-        // 改成最终事件都OK了，我们才存数据库
-        $phoneNumber->addUser($wechatUser);
-        $this->entityManager->persist($phoneNumber);
-        $this->entityManager->flush();
-
-        return $event->getResult();
+        return $event;
     }
 
     public function generateFormattedLogText(JsonRpcRequest $request): string

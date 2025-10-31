@@ -1,16 +1,25 @@
 <?php
 
+declare(strict_types=1);
+
 namespace WechatMiniProgramAuthBundle\Tests\Request;
 
-use PHPUnit\Framework\TestCase;
+use HttpClientBundle\Tests\Request\RequestTestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
 use WechatMiniProgramAuthBundle\Request\GetUserPhoneNumberRequest;
 
-class GetUserPhoneNumberRequestTest extends TestCase
+/**
+ * @internal
+ */
+#[CoversClass(GetUserPhoneNumberRequest::class)]
+final class GetUserPhoneNumberRequestTest extends RequestTestCase
 {
     private GetUserPhoneNumberRequest $request;
 
     protected function setUp(): void
     {
+        parent::setUp();
+
         $this->request = new GetUserPhoneNumberRequest();
     }
 
@@ -28,10 +37,12 @@ class GetUserPhoneNumberRequestTest extends TestCase
     public function testGetRequestOptions(): void
     {
         $this->request->setCode('test_code');
-        
+
         $options = $this->request->getRequestOptions();
-        
+        self::assertIsArray($options, 'Request options should be an array');
+
         self::assertArrayHasKey('json', $options);
+        self::assertIsArray($options['json']);
         self::assertSame('test_code', $options['json']['code']);
     }
 }

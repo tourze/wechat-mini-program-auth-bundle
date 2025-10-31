@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace WechatMiniProgramAuthBundle\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
@@ -8,17 +10,18 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Attribute\Ignore;
+use Symfony\Component\Validator\Constraints as Assert;
 use Tourze\DoctrineIndexedBundle\Attribute\IndexColumn;
-use Tourze\DoctrineIpBundle\Attribute\CreateIpColumn;
-use Tourze\DoctrineIpBundle\Attribute\UpdateIpColumn;
+use Tourze\DoctrineIpBundle\Traits\IpTraceableAware;
 use Tourze\DoctrineTimestampBundle\Traits\TimestampableAware;
+use Tourze\LockServiceBundle\Model\LockEntity;
 use Tourze\UserIDBundle\Contracts\IdentityInterface;
 use Tourze\UserIDBundle\Model\Identity;
 use Tourze\WechatMiniProgramAppIDContracts\MiniProgramInterface;
 use WechatMiniProgramAuthBundle\Enum\Gender;
 use WechatMiniProgramAuthBundle\Enum\Language;
+use WechatMiniProgramAuthBundle\Exception\AccountNotFoundException;
 use WechatMiniProgramAuthBundle\Repository\UserRepository;
-use WechatMiniProgramBundle\Entity\Account;
 
 /**
  * 微信用户信息
@@ -31,71 +34,83 @@ use WechatMiniProgramBundle\Entity\Account;
  */
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: 'wechat_mini_program_user', options: ['comment' => '微信小程序用户'])]
-class User implements \Stringable, IdentityInterface, \Tourze\WechatMiniProgramUserContracts\UserInterface
+class User implements \Stringable, IdentityInterface, \Tourze\WechatMiniProgramUserContracts\UserInterface, LockEntity
 {
     use TimestampableAware;
+    use IpTraceableAware;
     public const IDENTITY_PREFIX = 'wechat-mini-program-';
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: Types::INTEGER, options: ['comment' => 'ID'])]
-    private ?int $id = 0;
+    private ?int $id = null;
 
-    #[ORM\ManyToOne(targetEntity: Account::class)]
+    #[ORM\ManyToOne(targetEntity: MiniProgramInterface::class)]
     #[ORM\JoinColumn(onDelete: 'SET NULL')]
-    private ?Account $account = null;
+    private ?MiniProgramInterface $account = null;
 
+    #[Assert\NotBlank]
+    #[Assert\Length(max: 120)]
     #[IndexColumn]
-    #[ORM\Column(type: Types::STRING, length: 120, options: ['comment' => 'OpenID'])]
+    #[ORM\Column(type: Types::STRING, length: 120, unique: true, options: ['comment' => 'OpenID'])]
     private string $openId;
 
+    #[Assert\Length(max: 120)]
     #[IndexColumn]
     #[ORM\Column(type: Types::STRING, length: 120, nullable: true, options: ['comment' => 'UnionID'])]
     private ?string $unionId = null;
 
+    #[Assert\Length(max: 255)]
     #[ORM\Column(type: Types::STRING, length: 255, nullable: true, options: ['comment' => '昵称'])]
     private ?string $nickName = null;
 
+    #[Assert\Url]
+    #[Assert\Length(max: 500)]
     #[ORM\Column(type: Types::STRING, length: 500, nullable: true, options: ['comment' => '头像URL'])]
     private ?string $avatarUrl = null;
 
+    #[Assert\Choice(callback: [Gender::class, 'cases'])]
     #[ORM\Column(type: Types::INTEGER, nullable: true, enumType: Gender::class, options: ['comment' => '性别'])]
     private ?Gender $gender = null;
 
+    #[Assert\Length(max: 100)]
     #[ORM\Column(type: Types::STRING, length: 100, nullable: true, options: ['comment' => '国家'])]
     private ?string $country = null;
 
+    #[Assert\Length(max: 100)]
     #[ORM\Column(type: Types::STRING, length: 100, nullable: true, options: ['comment' => '省份'])]
     private ?string $province = null;
 
+    #[Assert\Length(max: 100)]
     #[ORM\Column(type: Types::STRING, length: 100, nullable: true, options: ['comment' => '地区'])]
     private ?string $city = null;
 
+    #[Assert\NotNull]
+    #[Assert\Choice(callback: [Language::class, 'cases'])]
     #[ORM\Column(type: Types::STRING, length: 10, nullable: false, enumType: Language::class, options: ['comment' => '语言', 'default' => 'zh_CN'])]
     private Language $language = Language::zh_CN;
 
+    #[Assert\Length(max: 65535)]
     #[ORM\Column(type: Types::TEXT, nullable: true, options: ['comment' => '原始数据'])]
     private ?string $rawData = null;
 
+    /**
+     * @var string[]|null
+     */
+    #[Assert\All(constraints: [new Assert\Type(type: 'string')])]
     #[ORM\Column(type: Types::SIMPLE_ARRAY, nullable: true, options: ['comment' => '已授权scope'])]
     private ?array $authorizeScopes = [];
 
     /**
-     * @var Collection<PhoneNumber>
+     * @var Collection<int, PhoneNumber>
      */
     #[Ignore]
     #[ORM\ManyToMany(targetEntity: PhoneNumber::class, mappedBy: 'users', fetch: 'EXTRA_LAZY')]
     private Collection $phoneNumbers;
 
     #[ORM\ManyToOne(targetEntity: UserInterface::class, cascade: ['persist'])]
-    #[ORM\JoinColumn(onDelete: 'SET NULL')]
+    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', onDelete: 'SET NULL')]
     private ?UserInterface $user = null;
-
-    #[CreateIpColumn]
-    private ?string $createdFromIp = null;
-
-    #[UpdateIpColumn]
-    private ?string $updatedFromIp = null;
 
     public function __construct()
     {
@@ -104,11 +119,11 @@ class User implements \Stringable, IdentityInterface, \Tourze\WechatMiniProgramU
 
     public function __toString(): string
     {
-        if ($this->getId() === null) {
+        if (null === $this->getId()) {
             return '';
         }
 
-        if (0 === mb_strlen($this->getNickName())) {
+        if (0 === mb_strlen($this->getNickName() ?? '')) {
             return $this->getOpenId();
         }
 
@@ -125,20 +140,14 @@ class User implements \Stringable, IdentityInterface, \Tourze\WechatMiniProgramU
         $this->id = $id;
     }
 
-    public function getAccount(): ?Account
+    public function getAccount(): ?MiniProgramInterface
     {
         return $this->account;
     }
 
-    public function setAccount(Account|MiniProgramInterface|null $account): self
+    public function setAccount(?MiniProgramInterface $account): void
     {
-        if ($account instanceof MiniProgramInterface && !($account instanceof Account)) {
-            // 如果是 MiniProgramInterface 但不是 Account，尝试转换
-            throw new \TypeError('Account must be an instance of WechatMiniProgramBundle\Entity\Account');
-        }
         $this->account = $account;
-
-        return $this;
     }
 
     public function getOpenId(): string
@@ -146,11 +155,9 @@ class User implements \Stringable, IdentityInterface, \Tourze\WechatMiniProgramU
         return $this->openId;
     }
 
-    public function setOpenId(string $openId): self
+    public function setOpenId(string $openId): void
     {
         $this->openId = $openId;
-
-        return $this;
     }
 
     public function getUnionId(): ?string
@@ -158,11 +165,9 @@ class User implements \Stringable, IdentityInterface, \Tourze\WechatMiniProgramU
         return $this->unionId;
     }
 
-    public function setUnionId(?string $unionId): self
+    public function setUnionId(?string $unionId): void
     {
         $this->unionId = $unionId;
-
-        return $this;
     }
 
     public function getNickName(): ?string
@@ -170,11 +175,9 @@ class User implements \Stringable, IdentityInterface, \Tourze\WechatMiniProgramU
         return $this->nickName;
     }
 
-    public function setNickName(?string $nickName): self
+    public function setNickName(?string $nickName): void
     {
         $this->nickName = $nickName;
-
-        return $this;
     }
 
     public function getAvatarUrl(): ?string
@@ -182,11 +185,9 @@ class User implements \Stringable, IdentityInterface, \Tourze\WechatMiniProgramU
         return $this->avatarUrl;
     }
 
-    public function setAvatarUrl(?string $avatarUrl): self
+    public function setAvatarUrl(?string $avatarUrl): void
     {
         $this->avatarUrl = $avatarUrl;
-
-        return $this;
     }
 
     public function getGender(): ?Gender
@@ -194,11 +195,9 @@ class User implements \Stringable, IdentityInterface, \Tourze\WechatMiniProgramU
         return $this->gender;
     }
 
-    public function setGender(?Gender $gender): self
+    public function setGender(?Gender $gender): void
     {
         $this->gender = $gender;
-
-        return $this;
     }
 
     public function getCountry(): ?string
@@ -206,11 +205,9 @@ class User implements \Stringable, IdentityInterface, \Tourze\WechatMiniProgramU
         return $this->country;
     }
 
-    public function setCountry(?string $country): self
+    public function setCountry(?string $country): void
     {
         $this->country = $country;
-
-        return $this;
     }
 
     public function getProvince(): ?string
@@ -218,11 +215,9 @@ class User implements \Stringable, IdentityInterface, \Tourze\WechatMiniProgramU
         return $this->province;
     }
 
-    public function setProvince(?string $province): self
+    public function setProvince(?string $province): void
     {
         $this->province = $province;
-
-        return $this;
     }
 
     public function getCity(): ?string
@@ -230,11 +225,9 @@ class User implements \Stringable, IdentityInterface, \Tourze\WechatMiniProgramU
         return $this->city;
     }
 
-    public function setCity(?string $city): self
+    public function setCity(?string $city): void
     {
         $this->city = $city;
-
-        return $this;
     }
 
     public function getLanguage(): Language
@@ -242,11 +235,9 @@ class User implements \Stringable, IdentityInterface, \Tourze\WechatMiniProgramU
         return $this->language;
     }
 
-    public function setLanguage(Language $language): self
+    public function setLanguage(Language $language): void
     {
         $this->language = $language;
-
-        return $this;
     }
 
     public function getRawData(): ?string
@@ -254,23 +245,25 @@ class User implements \Stringable, IdentityInterface, \Tourze\WechatMiniProgramU
         return $this->rawData;
     }
 
-    public function setRawData(?string $rawData): self
+    public function setRawData(?string $rawData): void
     {
         $this->rawData = $rawData;
-
-        return $this;
     }
 
+    /**
+     * @return string[]|null
+     */
     public function getAuthorizeScopes(): ?array
     {
         return $this->authorizeScopes;
     }
 
-    public function setAuthorizeScopes(?array $authorizeScopes): self
+    /**
+     * @param string[]|null $authorizeScopes
+     */
+    public function setAuthorizeScopes(?array $authorizeScopes): void
     {
         $this->authorizeScopes = $authorizeScopes;
-
-        return $this;
     }
 
     /**
@@ -281,23 +274,19 @@ class User implements \Stringable, IdentityInterface, \Tourze\WechatMiniProgramU
         return $this->phoneNumbers;
     }
 
-    public function addPhoneNumber(PhoneNumber $phoneNumber): self
+    public function addPhoneNumber(PhoneNumber $phoneNumber): void
     {
         if (!$this->phoneNumbers->contains($phoneNumber)) {
-            $this->phoneNumbers[] = $phoneNumber;
+            $this->phoneNumbers->add($phoneNumber);
             $phoneNumber->addUser($this);
         }
-
-        return $this;
     }
 
-    public function removePhoneNumber(PhoneNumber $phoneNumber): self
+    public function removePhoneNumber(PhoneNumber $phoneNumber): void
     {
         if ($this->phoneNumbers->removeElement($phoneNumber)) {
             $phoneNumber->removeUser($this);
         }
-
-        return $this;
     }
 
     public function getUser(): ?UserInterface
@@ -305,11 +294,9 @@ class User implements \Stringable, IdentityInterface, \Tourze\WechatMiniProgramU
         return $this->user;
     }
 
-    public function setUser(?UserInterface $user): self
+    public function setUser(?UserInterface $user): void
     {
         $this->user = $user;
-
-        return $this;
     }
 
     public function getIdentityValue(): string
@@ -319,9 +306,17 @@ class User implements \Stringable, IdentityInterface, \Tourze\WechatMiniProgramU
 
     public function getIdentityType(): string
     {
-        return self::IDENTITY_PREFIX . $this->getAccount()->getAppId();
+        $account = $this->getAccount();
+        if (null === $account) {
+            throw new AccountNotFoundException('Account cannot be null when getting identity type');
+        }
+
+        return self::IDENTITY_PREFIX . $account->getAppId();
     }
 
+    /**
+     * @return \Generator<Identity>
+     */
     public function getIdentityArray(): \Traversable
     {
         yield new Identity((string) $this->getId(), $this->getIdentityType(), $this->getIdentityValue(), [
@@ -329,7 +324,7 @@ class User implements \Stringable, IdentityInterface, \Tourze\WechatMiniProgramU
             'updateTime' => $this->getUpdateTime()?->format('Y-m-d H:i:s'),
         ]);
         $unionId = $this->getUnionId();
-        if ($unionId !== null) {
+        if (null !== $unionId) {
             yield new Identity((string) $this->getId(), 'wechat-unionid', $unionId, [
                 'createTime' => $this->getCreateTime()?->format('Y-m-d H:i:s'),
                 'updateTime' => $this->getUpdateTime()?->format('Y-m-d H:i:s'),
@@ -337,35 +332,23 @@ class User implements \Stringable, IdentityInterface, \Tourze\WechatMiniProgramU
         }
     }
 
-    public function getCreatedFromIp(): ?string
-    {
-        return $this->createdFromIp;
-    }
-
-    public function setCreatedFromIp(?string $createdFromIp): self
-    {
-        $this->createdFromIp = $createdFromIp;
-
-        return $this;
-    }
-
-    public function getUpdatedFromIp(): ?string
-    {
-        return $this->updatedFromIp;
-    }
-
-    public function setUpdatedFromIp(?string $updatedFromIp): self
-    {
-        $this->updatedFromIp = $updatedFromIp;
-
-        return $this;
-    }public function getAccounts(): array
+    public function getAccounts(): array
     {
         return [];
     }
 
     public function getMiniProgram(): MiniProgramInterface
     {
-        return $this->getAccount();
+        $account = $this->getAccount();
+        if (null === $account) {
+            throw new AccountNotFoundException('Account cannot be null when getting mini program');
+        }
+
+        return $account;
+    }
+
+    public function retrieveLockResource(): string
+    {
+        return 'wechat_mini_program_user_' . $this->getOpenId();
     }
 }

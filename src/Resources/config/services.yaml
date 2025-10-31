@@ -4,9 +4,15 @@ services:
     autowire: true      # Automatically injects dependencies in your services.
     autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
 
+  WechatMiniProgramAuthBundle\Controller\:
+    resource: '../../Controller/'
   WechatMiniProgramAuthBundle\Procedure\:
     resource: '../../Procedure/'
   WechatMiniProgramAuthBundle\Repository\:
     resource: '../../Repository/'
   WechatMiniProgramAuthBundle\Service\:
     resource: '../../Service/'
+  
+  # Make AdminMenu service public for testing
+  WechatMiniProgramAuthBundle\Service\AdminMenu:
+    public: true

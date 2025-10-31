@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace WechatMiniProgramAuthBundle\Event;
 
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Contracts\EventDispatcher\Event;
+use Tourze\WechatMiniProgramAppIDContracts\MiniProgramInterface;
 use WechatMiniProgramAuthBundle\Entity\CodeSessionLog;
-use WechatMiniProgramBundle\Entity\Account;
 use WechatMiniProgramBundle\Event\LaunchOptionsAware;
 
 /**
@@ -15,25 +17,25 @@ class CodeToSessionRequestEvent extends Event
 {
     use LaunchOptionsAware;
 
-    private Account $account;
+    private MiniProgramInterface $account;
 
     private string $code;
 
     private CodeSessionLog $codeSessionLog;
 
     /**
-     * @var array|null 当需要拦截返回值时，我们通过这里来控制
+     * @var array<string, mixed>|null 当需要拦截返回值时，我们通过这里来控制
      */
     private ?array $return = null;
 
-    private UserInterface|null $bizUser = null;
+    private ?UserInterface $bizUser = null;
 
-    public function getAccount(): Account
+    public function getAccount(): MiniProgramInterface
     {
         return $this->account;
     }
 
-    public function setAccount(Account $account): void
+    public function setAccount(MiniProgramInterface $account): void
     {
         $this->account = $account;
     }
@@ -58,22 +60,28 @@ class CodeToSessionRequestEvent extends Event
         $this->codeSessionLog = $codeSessionLog;
     }
 
+    /**
+     * @return array<string, mixed>|null
+     */
     public function getReturn(): ?array
     {
         return $this->return;
     }
 
+    /**
+     * @param array<string, mixed>|null $return
+     */
     public function setReturn(?array $return): void
     {
         $this->return = $return;
     }
 
-    public function getBizUser(): UserInterface|null
+    public function getBizUser(): ?UserInterface
     {
         return $this->bizUser;
     }
 
-    public function setBizUser(UserInterface|null $bizUser): void
+    public function setBizUser(?UserInterface $bizUser): void
     {
         $this->bizUser = $bizUser;
     }

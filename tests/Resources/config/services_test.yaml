@@ -1,0 +1,7 @@
+services:
+  # Test services for wechat-mini-program-auth-bundle tests
+  WechatMiniProgramAuthBundle\Tests\Service\TestUserLoader:
+    autowire: true
+    public: true
+    tags:
+      - { name: 'test.service' }

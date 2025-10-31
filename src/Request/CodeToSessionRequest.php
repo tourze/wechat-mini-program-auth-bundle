@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace WechatMiniProgramAuthBundle\Request;
 
 use HttpClientBundle\Request\ApiRequest;
@@ -27,6 +29,9 @@ class CodeToSessionRequest extends ApiRequest implements CacheRequest
         return '/sns/jscode2session';
     }
 
+    /**
+     * @return array<string, mixed>|null
+     */
     public function getRequestOptions(): ?array
     {
         return [

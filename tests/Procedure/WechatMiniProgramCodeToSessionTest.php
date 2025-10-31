@@ -1,202 +1,213 @@
 <?php
 
+declare(strict_types=1);
+
 namespace WechatMiniProgramAuthBundle\Tests\Procedure;
 
-use AccessTokenBundle\Service\AccessTokenService;
 use Doctrine\ORM\EntityManagerInterface;
-use PHPUnit\Framework\TestCase;
-use Psr\Log\LoggerInterface;
-use Symfony\Bridge\Doctrine\Security\User\UserLoaderInterface;
-use Symfony\Bundle\SecurityBundle\Security;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
+use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
-use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
-use Tourze\DoctrineUpsertBundle\Service\UpsertManager;
 use Tourze\JsonRPC\Core\Exception\ApiException;
 use Tourze\JsonRPC\Core\Model\JsonRpcParams;
-use Tourze\LoginProtectBundle\Service\LoginService;
+use Tourze\JsonRPC\Core\Tests\AbstractProcedureTestCase;
 use WechatMiniProgramAuthBundle\Entity\CodeSessionLog;
+use WechatMiniProgramAuthBundle\Exception\TestApiCallException;
 use WechatMiniProgramAuthBundle\Procedure\WechatMiniProgramCodeToSession;
-use WechatMiniProgramAuthBundle\Repository\CodeSessionLogRepository;
-use WechatMiniProgramAuthBundle\Repository\UserRepository;
+use WechatMiniProgramAuthBundle\Request\CodeToSessionRequest;
 use WechatMiniProgramBundle\Entity\Account;
-use WechatMiniProgramBundle\Service\AccountService;
 use WechatMiniProgramBundle\Service\Client;
 
-class WechatMiniProgramCodeToSessionTest extends TestCase
+/**
+ * @internal
+ */
+#[CoversClass(WechatMiniProgramCodeToSession::class)]
+#[RunTestsInSeparateProcesses]
+final class WechatMiniProgramCodeToSessionTest extends AbstractProcedureTestCase
 {
-    private $accountService;
-    private $codeSessionLogRepository;
-    private $entityManager;
-    private $upsertManager;
-    private $client;
-    private $eventDispatcher;
-    private $userLoader;
-    private $accessTokenService;
-    private $requestStack;
-    private $loginService;
-    private $security;
-    private $logger;
-    private $userRepository;
     private WechatMiniProgramCodeToSession $procedure;
 
-    protected function setUp(): void
+    protected function onSetUp(): void
     {
-        $this->accountService = $this->createMock(AccountService::class);
-        $this->codeSessionLogRepository = $this->createMock(CodeSessionLogRepository::class);
-        $this->entityManager = $this->createMock(EntityManagerInterface::class);
-        $this->upsertManager = $this->createMock(UpsertManager::class);
-        $this->client = $this->createMock(Client::class);
-        $this->eventDispatcher = $this->createMock(EventDispatcherInterface::class);
-        $this->userLoader = $this->createMock(UserLoaderInterface::class);
-        $this->accessTokenService = $this->createMock(AccessTokenService::class);
-        $this->requestStack = $this->createMock(RequestStack::class);
-        $this->loginService = $this->createMock(LoginService::class);
-        $this->security = $this->createMock(Security::class);
-        $this->logger = $this->createMock(LoggerInterface::class);
-        $this->userRepository = $this->createMock(UserRepository::class);
+        // 在onSetUp中创建Mock客户端并替换服务
+        $mockClient = $this->createMockClient();
 
-        $this->procedure = new WechatMiniProgramCodeToSession(
-            $this->accountService,
-            $this->codeSessionLogRepository,
-            $this->entityManager,
-            $this->upsertManager,
-            $this->client,
-            $this->eventDispatcher,
-            $this->userLoader,
-            $this->accessTokenService,
-            $this->requestStack,
-            $this->loginService,
-            $this->security,
-            $this->logger,
-            $this->userRepository
-        );
+        // 动态替换容器中的Client服务
+        /** @var Container $container */
+        /** @phpstan-ignore-next-line */
+        $container = $this->getContainer();
+        $container->set(Client::class, $mockClient);
+
+        $this->procedure = self::getService(WechatMiniProgramCodeToSession::class);
     }
 
-    public function testExecute_withInvalidAccount()
+    public function testInstantiation(): void
     {
-        // 准备测试数据
-        $appId = 'test_app_id';
+        $this->assertInstanceOf(WechatMiniProgramCodeToSession::class, $this->procedure);
+    }
+
+    /**
+     * 创建模拟的微信客户端
+     */
+    private function createMockClient(): Client
+    {
+        $mockClient = $this->createMock(Client::class);
+
+        $mockClient->method('request')
+            ->willReturnCallback(function (CodeToSessionRequest $request) {
+                return $this->handleMockRequest($request);
+            })
+        ;
+
+        return $mockClient;
+    }
+
+    /**
+     * 处理模拟请求
+     *
+     * @param CodeToSessionRequest $request
+     *
+     * @return array<string, mixed|null>
+     */
+    private function handleMockRequest(object $request): array
+    {
+        $jsCode = $request->getJsCode();
+        if (!str_starts_with($jsCode, 'mock_')) {
+            throw new TestApiCallException('Real API calls are not allowed in tests');
+        }
+
+        $jsonData = substr($jsCode, 5); // 移除 'mock_' 前缀
+        $data = json_decode($jsonData, true);
+
+        if (JSON_ERROR_NONE !== json_last_error() || !is_array($data)) {
+            throw new TestApiCallException('Invalid mock data format');
+        }
+
+        /** @var array<string, mixed> $data */
+        return $this->buildMockResponse($data);
+    }
+
+    /**
+     * 构建模拟响应
+     *
+     * @param array<string, mixed> $data
+     *
+     * @return array<string, mixed|null>
+     */
+    private function buildMockResponse(array $data): array
+    {
+        $openid = is_string($data['openid'] ?? null) ? $data['openid'] : 'mock_openid';
+        $unionid = is_string($data['unionid'] ?? null) ? $data['unionid'] : null;
+        $sessionKey = is_string($data['session_key'] ?? null) ? $data['session_key'] : 'mock_session_key';
+
+        // 对于空 session_key 的情况直接返回 null
+        if (!isset($data['session_key']) || '' === $data['session_key']) {
+            return [
+                'openid' => $openid,
+                'unionid' => $unionid,
+                'session_key' => null,
+            ];
+        }
+
+        return [
+            'openid' => $openid,
+            'unionid' => $unionid,
+            'session_key' => $sessionKey,
+        ];
+    }
+
+    public function testExecuteWithInvalidAccount(): void
+    {
+        // 确保数据库中没有Account记录
+        self::getService(EntityManagerInterface::class)
+            ->createQuery('DELETE FROM ' . Account::class)
+            ->execute()
+        ;
+
+        $appId = 'nonexistent_app_id';
         $code = 'test_code';
-        
-        // 设置过程类的属性
+
+        $request = new Request();
+        $requestStack = self::getService(RequestStack::class);
+        $requestStack->push($request);
+
         $this->procedure->appId = $appId;
         $this->procedure->code = $code;
-        
-        // 模拟请求对象
-        $request = $this->createMock(Request::class);
-        $this->requestStack->method('getMainRequest')->willReturn($request);
-        
-        // 模拟AccountService返回null，表示找不到小程序
-        $this->accountService->method('detectAccountFromRequest')
-            ->with($request, $appId)
-            ->willReturn(null);
-            
-        // 预期执行方法会抛出ApiException
+
         $this->expectException(ApiException::class);
         $this->expectExceptionMessage('找不到小程序');
-        
-        // 执行测试
+
         $this->procedure->execute();
     }
-    
-    public function testExecute_withInvalidSessionAndNoPreviousLog()
+
+    public function testExecuteWithInvalidSessionAndNoPreviousLog(): void
     {
-        // 准备测试数据
         $appId = 'test_app_id';
         $appSecret = 'test_app_secret';
-        $code = 'test_code';
-        
-        // 设置过程类的属性
-        $this->procedure->appId = $appId;
-        $this->procedure->code = $code;
-        
-        // 模拟请求对象
-        $request = $this->createMock(Request::class);
-        $this->requestStack->method('getMainRequest')->willReturn($request);
-        
-        // 模拟AccountService返回Account对象
+        // 使用模拟数据，避免调用真实微信API，使用空的 session_key 来触发错误流程
+        $code = 'mock_{"openid":"test_openid_unique","unionid":"test_unionid","session_key":""}';
+
+        $request = new Request();
+        $requestStack = self::getService(RequestStack::class);
+        $requestStack->push($request);
+
         $account = new Account();
+        $account->setName('测试小程序');
         $account->setAppId($appId);
         $account->setAppSecret($appSecret);
-        $this->accountService->method('detectAccountFromRequest')
-            ->with($request, $appId)
-            ->willReturn($account);
-            
-        // 模拟Client返回无效的会话数据（没有session_key）
-        $sessionData = [
-            'errcode' => 40029,
-            'errmsg' => 'invalid code'
-        ];
-        $this->client->method('request')
-            ->willReturn($sessionData);
-            
-        // 模拟CodeSessionLogRepository返回null，表示不存在该日志
-        $this->codeSessionLogRepository->method('findOneBy')
-            ->with(['code' => $code, 'account' => $account])
-            ->willReturn(null);
-            
-        // 预期执行方法会抛出ApiException
+        $account->setValid(true);
+        $this->persistAndFlush($account);
+
+        $this->procedure->appId = $appId;
+        $this->procedure->code = $code;
+
         $this->expectException(ApiException::class);
         $this->expectExceptionMessage('微信登录失败，请重新进入小程序[1]');
-        
-        // 执行测试
+
         $this->procedure->execute();
     }
-    
-    public function testExecute_withInvalidSessionAndOldPreviousLog()
+
+    public function testExecuteWithInvalidSessionAndOldPreviousLog(): void
     {
-        // 准备测试数据
         $appId = 'test_app_id';
         $appSecret = 'test_app_secret';
-        $code = 'test_code';
-        
-        // 设置过程类的属性
-        $this->procedure->appId = $appId;
-        $this->procedure->code = $code;
-        
-        // 模拟请求对象
-        $request = $this->createMock(Request::class);
-        $this->requestStack->method('getMainRequest')->willReturn($request);
-        
-        // 模拟AccountService返回Account对象
+        $code = 'mock_{"openid":"old_test_openid_unique","unionid":"test_unionid","session_key":""}';
+
+        $request = new Request();
+        $requestStack = self::getService(RequestStack::class);
+        $requestStack->push($request);
+
         $account = new Account();
+        $account->setName('测试小程序');
         $account->setAppId($appId);
         $account->setAppSecret($appSecret);
-        $this->accountService->method('detectAccountFromRequest')
-            ->with($request, $appId)
-            ->willReturn($account);
-            
-        // 模拟Client返回无效的会话数据（没有session_key）
-        $sessionData = [
-            'errcode' => 40029,
-            'errmsg' => 'invalid code'
-        ];
-        $this->client->method('request')
-            ->willReturn($sessionData);
-            
-        // 模拟CodeSessionLogRepository返回很久之前的日志
+        $account->setValid(true);
+        $this->persistAndFlush($account);
+
         $oldLog = new CodeSessionLog();
         $oldLog->setCreateTime(new \DateTimeImmutable('-30 minutes'));
-        $this->codeSessionLogRepository->method('findOneBy')
-            ->with(['code' => $code, 'account' => $account])
-            ->willReturn($oldLog);
-            
-        // 预期执行方法会抛出ApiException
+        $oldLog->setCode($code);
+        $oldLog->setAccount($account);
+        $this->persistAndFlush($oldLog);
+
+        $this->procedure->appId = $appId;
+        $this->procedure->code = $code;
+
         $this->expectException(ApiException::class);
         $this->expectExceptionMessage('微信登录失败，请重新进入小程序[2]');
-        
-        // 执行测试
+
         $this->procedure->execute();
     }
-    
-    public function testGetLockResource()
+
+    public function testGetLockResource(): void
     {
         $code = 'test_code';
         $params = new JsonRpcParams(['code' => $code]);
-        
+
         $result = $this->procedure->getLockResource($params);
-        
-        $this->assertEquals(['WechatMiniProgramCodeToSession' . $code], $result);
+
+        self::assertEquals(['WechatMiniProgramCodeToSession' . $code], $result);
     }
-} 
+}
