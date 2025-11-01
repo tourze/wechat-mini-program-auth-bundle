@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace WechatMiniProgramAuthBundle\Tests\Request;
 
-use HttpClientBundle\Tests\Request\RequestTestCase;
+use HttpClientBundle\Test\RequestTestCase;
 use PHPUnit\Framework\Attributes\CoversClass;
 use WechatMiniProgramAuthBundle\Request\CodeToSessionRequest;
 
