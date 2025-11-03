@@ -26,6 +26,7 @@ use Tourze\WechatMiniProgramUserContracts\UserInterface;
 use WechatMiniProgramAuthBundle\Entity\User;
 use WechatMiniProgramBundle\Entity\Account;
 use WechatMiniProgramBundle\WechatMiniProgramBundle;
+use Tourze\EasyAdminMenuBundle\EasyAdminMenuBundle;
 
 class WechatMiniProgramAuthBundle extends Bundle implements BundleDependencyInterface
 {
@@ -62,6 +63,7 @@ class WechatMiniProgramAuthBundle extends Bundle implements BundleDependencyInte
             SecurityBundle::class => ['all' => true],
             WechatMiniProgramBundle::class => ['all' => true],
             JsonRPCSecurityBundle::class => ['all' => true],
+            EasyAdminMenuBundle::class => ['all' => true],
         ];
     }
 }
