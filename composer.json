@@ -50,7 +50,7 @@
     "tourze/lock-service-bundle": "1.0.*",
     "tourze/login-protect-bundle": "0.1.*",
     "tourze/symfony-schedule-entity-clean-bundle": "1.0.*",
-    "tourze/text-manage-bundle": "0.0.*",
+    "tourze/text-manage-bundle": "1.0.*",
     "tourze/user-event-bundle": "1.0.*",
     "tourze/user-id-bundle": "1.0.*",
     "tourze/user-service-contracts": "1.*",
