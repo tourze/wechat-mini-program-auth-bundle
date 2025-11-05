@@ -54,8 +54,8 @@
     "tourze/user-id-bundle": "1.0.*",
     "tourze/user-service-contracts": "1.*",
     "tourze/wechat-helper": "0.0.*",
-    "tourze/wechat-mini-program-appid-contracts": "0.0.*",
-    "tourze/wechat-mini-program-bundle": "0.1.*",
+    "tourze/wechat-mini-program-appid-contracts": "1.0.*",
+    "tourze/wechat-mini-program-bundle": "1.0.*",
     "tourze/wechat-mini-program-user-contracts": "0.0.*",
     "yiisoft/json": "^1.0"
   },
