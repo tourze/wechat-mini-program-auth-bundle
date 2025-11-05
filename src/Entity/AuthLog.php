@@ -26,7 +26,7 @@ class AuthLog implements \Stringable
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: Types::INTEGER, options: ['comment' => '主键'])]
-    private ?int $id = null; // @phpstan-ignore-line property.unusedType Doctrine ORM assigns ID after persist
+    private ?int $id = null;
 
     #[Assert\Length(max: 255)]
     #[ORM\Column(length: 255, nullable: true, options: ['comment' => 'OpenID'])]

@@ -29,7 +29,7 @@ class CodeSessionLog implements LockEntity, \Stringable
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: Types::INTEGER, options: ['comment' => 'ID'])]
-    private ?int $id = null; // @phpstan-ignore-line property.unusedType Doctrine ORM assigns ID after persist
+    private ?int $id = null;
 
     #[ORM\ManyToOne(targetEntity: MiniProgramInterface::class)]
     #[ORM\JoinColumn(onDelete: 'SET NULL')]
