@@ -167,6 +167,7 @@ final class UserTest extends AbstractEntityTestCase
     public function testGetIdentityType(): void
     {
         $appId = 'wx12345678';
+        /** @phpstan-ignore-next-line method.notFound PHPUnit MockObject provides method() for test stubbing */
         $this->account->method('getAppId')->willReturn($appId);
         $account = $this->account;
         $this->assertInstanceOf(MiniProgramInterface::class, $account);

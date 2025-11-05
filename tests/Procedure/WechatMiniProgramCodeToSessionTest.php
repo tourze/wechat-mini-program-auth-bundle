@@ -36,8 +36,7 @@ final class WechatMiniProgramCodeToSessionTest extends AbstractProcedureTestCase
 
         // 动态替换容器中的Client服务
         /** @var Container $container */
-        /** @phpstan-ignore-next-line */
-        $container = $this->getContainer();
+        $container = $this->getContainer(); // @phpstan-ignore-line staticMethod.dynamicCall
         $container->set(Client::class, $mockClient);
 
         $this->procedure = self::getService(WechatMiniProgramCodeToSession::class);

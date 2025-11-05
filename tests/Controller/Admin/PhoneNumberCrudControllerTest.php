@@ -20,8 +20,8 @@ use WechatMiniProgramAuthBundle\Tests\EasyAdmin\PhoneNumberCrudConfigurationTest
  * PhoneNumberCrudController 是只读控制器，禁用了 NEW 和 EDIT 操作。
  * 因此，这些操作的验证测试不适用，将被跳过。
  *
- * @phpstan-ignore-next-line Controller has required fields but no validation test (read-only controller)
  */
+/** @phpstan-ignore-next-line phpstan.symfonyWebTest.easyAdminRequiredFieldValidationTest 只读控制器无需验证测试 */
 #[CoversClass(PhoneNumberCrudController::class)]
 #[RunTestsInSeparateProcesses]
 final class PhoneNumberCrudControllerTest extends AbstractEasyAdminControllerTestCase
@@ -77,8 +77,7 @@ final class PhoneNumberCrudControllerTest extends AbstractEasyAdminControllerTes
         $phoneNumber->setPhoneNumber('+86-13812345678');
         $phoneNumber->setPurePhoneNumber('13812345678');
         $phoneNumber->setCountryCode('86');
-        /** @phpstan-ignore-next-line */
-        $entityManager = $this->getEntityManager();
+        $entityManager = $this->getEntityManager(); // @phpstan-ignore-line staticMethod.dynamicCall
         $entityManager->persist($phoneNumber);
         $entityManager->flush();
 
@@ -103,8 +102,7 @@ final class PhoneNumberCrudControllerTest extends AbstractEasyAdminControllerTes
         $phoneNumber->setPhoneNumber('+86-13987654321');
         $phoneNumber->setPurePhoneNumber('13987654321');
         $phoneNumber->setCountryCode('86');
-        /** @phpstan-ignore-next-line */
-        $entityManager = $this->getEntityManager();
+        $entityManager = $this->getEntityManager(); // @phpstan-ignore-line staticMethod.dynamicCall
         $entityManager->persist($phoneNumber);
         $entityManager->flush();
 
@@ -129,8 +127,7 @@ final class PhoneNumberCrudControllerTest extends AbstractEasyAdminControllerTes
         $phoneNumber->setPhoneNumber('+1-5551234567');
         $phoneNumber->setPurePhoneNumber('5551234567');
         $phoneNumber->setCountryCode('1');
-        /** @phpstan-ignore-next-line */
-        $entityManager = $this->getEntityManager();
+        $entityManager = $this->getEntityManager(); // @phpstan-ignore-line staticMethod.dynamicCall
         $entityManager->persist($phoneNumber);
         $entityManager->flush();
 
@@ -174,5 +171,10 @@ final class PhoneNumberCrudControllerTest extends AbstractEasyAdminControllerTes
         yield 'phoneNumber' => ['phoneNumber'];
         yield 'purePhoneNumber' => ['purePhoneNumber'];
         yield 'countryCode' => ['countryCode'];
+    }
+
+    public function testValidationErrors(): void
+    {
+        $this->markTestSkipped('PhoneNumberCrudController 是只读控制器，禁用了 NEW 和 EDIT 操作，无需验证测试'); // @phpstan-ignore-line staticMethod.dynamicCall
     }
 }

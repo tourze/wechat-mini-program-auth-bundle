@@ -100,8 +100,7 @@ final class UserCrudControllerTest extends AbstractEasyAdminControllerTestCase
         $user = new User();
         $user->setOpenId('test-open-id-789');
         $user->setNickName('Test User');
-        /** @phpstan-ignore-next-line */
-        $entityManager = $this->getEntityManager();
+        $entityManager = $this->getEntityManager(); // @phpstan-ignore-line staticMethod.dynamicCall
         $entityManager->persist($user);
         $entityManager->flush();
 
@@ -126,8 +125,7 @@ final class UserCrudControllerTest extends AbstractEasyAdminControllerTestCase
         $user->setOpenId('test-open-id');
         $user->setUnionId('test-union-id-456');
         $user->setNickName('Test User 2');
-        /** @phpstan-ignore-next-line */
-        $entityManager = $this->getEntityManager();
+        $entityManager = $this->getEntityManager(); // @phpstan-ignore-line staticMethod.dynamicCall
         $entityManager->persist($user);
         $entityManager->flush();
 
@@ -151,8 +149,7 @@ final class UserCrudControllerTest extends AbstractEasyAdminControllerTestCase
         $user = new User();
         $user->setOpenId('test-open-id-unique');
         $user->setNickName('张三测试用户');
-        /** @phpstan-ignore-next-line */
-        $entityManager = $this->getEntityManager();
+        $entityManager = $this->getEntityManager(); // @phpstan-ignore-line staticMethod.dynamicCall
         $entityManager->persist($user);
         $entityManager->flush();
 
@@ -192,7 +189,7 @@ final class UserCrudControllerTest extends AbstractEasyAdminControllerTestCase
         } else {
             $this->assertEquals(200, $statusCode);
             // 验证表单成功显示
-            $content = $client->getResponse()->getContent() ?? '';
+            $content = $client->getResponse()->getContent();
             $this->assertNotEmpty($content);
         }
     }

@@ -14,6 +14,9 @@ use WechatMiniProgramAuthBundle\Repository\AuthLogRepository;
 /**
  * @internal
  */
+/**
+ * @extends AbstractRepositoryTestCase<AuthLog>
+ */
 #[CoversClass(AuthLogRepository::class)]
 #[RunTestsInSeparateProcesses]
 final class AuthLogRepositoryTest extends AbstractRepositoryTestCase
@@ -112,7 +115,6 @@ final class AuthLogRepositoryTest extends AbstractRepositoryTestCase
 
         $authLogs = $this->repository->findBy(['openId' => null]);
 
-        self::assertIsArray($authLogs);
         self::assertGreaterThanOrEqual(1, count($authLogs));
     }
 
@@ -124,7 +126,6 @@ final class AuthLogRepositoryTest extends AbstractRepositoryTestCase
 
         $authLogs = $this->repository->findBy(['rawData' => null]);
 
-        self::assertIsArray($authLogs);
         self::assertGreaterThanOrEqual(1, count($authLogs));
     }
 
@@ -135,7 +136,6 @@ final class AuthLogRepositoryTest extends AbstractRepositoryTestCase
 
         $count = $this->repository->count(['openId' => null]);
 
-        self::assertIsInt($count);
         self::assertGreaterThanOrEqual(1, $count);
     }
 

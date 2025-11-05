@@ -95,7 +95,7 @@ use WechatMiniProgramAuthBundle\Entity\CodeSessionLog;
     #[DataProvider('provideNotAllowedMethods')]
     public function testMethodNotAllowed(string $method): void
     {
-        $this->assertNotNull($method);
+        $this->assertEquals('INVALID', $method, 'EasyAdmin CRUD 控制器不应该有路由方法');
     }
 
     protected function onSetUp(): void

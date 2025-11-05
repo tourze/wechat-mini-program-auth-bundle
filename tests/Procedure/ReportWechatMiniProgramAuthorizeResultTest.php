@@ -62,7 +62,6 @@ final class ReportWechatMiniProgramAuthorizeResultTest extends AbstractProcedure
 
         $result = $this->procedure->execute();
 
-        $this->assertIsArray($result);
         $this->assertArrayHasKey('id', $result);
         $this->assertEquals($wechatUser->getId(), $result['id']);
 

@@ -16,6 +16,7 @@ use WechatMiniProgramBundle\Entity\Account;
 
 /**
  * @internal
+ * @extends AbstractRepositoryTestCase<PhoneNumber>
  */
 #[CoversClass(PhoneNumberRepository::class)]
 #[RunTestsInSeparateProcesses]
@@ -171,7 +172,6 @@ final class PhoneNumberRepositoryTest extends AbstractRepositoryTestCase
             ->getSingleScalarResult()
         ;
 
-        self::assertIsInt($count);
         self::assertGreaterThanOrEqual(1, $count);
     }
 
@@ -184,7 +184,6 @@ final class PhoneNumberRepositoryTest extends AbstractRepositoryTestCase
 
         $phones = $this->repository->findBy(['purePhoneNumber' => null]);
 
-        self::assertIsArray($phones);
         self::assertGreaterThanOrEqual(1, count($phones));
     }
 
@@ -196,7 +195,6 @@ final class PhoneNumberRepositoryTest extends AbstractRepositoryTestCase
 
         $phones = $this->repository->findBy(['countryCode' => null]);
 
-        self::assertIsArray($phones);
         self::assertGreaterThanOrEqual(1, count($phones));
     }
 
@@ -208,7 +206,6 @@ final class PhoneNumberRepositoryTest extends AbstractRepositoryTestCase
 
         $phones = $this->repository->findBy(['watermark' => null]);
 
-        self::assertIsArray($phones);
         self::assertGreaterThanOrEqual(1, count($phones));
     }
 
@@ -220,7 +217,6 @@ final class PhoneNumberRepositoryTest extends AbstractRepositoryTestCase
 
         $phones = $this->repository->findBy(['rawData' => null]);
 
-        self::assertIsArray($phones);
         self::assertGreaterThanOrEqual(1, count($phones));
     }
 
@@ -233,7 +229,6 @@ final class PhoneNumberRepositoryTest extends AbstractRepositoryTestCase
 
         $count = $this->repository->count(['purePhoneNumber' => null]);
 
-        self::assertIsInt($count);
         self::assertGreaterThanOrEqual(1, $count);
     }
 
@@ -245,7 +240,6 @@ final class PhoneNumberRepositoryTest extends AbstractRepositoryTestCase
 
         $count = $this->repository->count(['purePhoneNumber' => null]);
 
-        self::assertIsInt($count);
         self::assertGreaterThanOrEqual(1, $count);
     }
 
@@ -257,7 +251,6 @@ final class PhoneNumberRepositoryTest extends AbstractRepositoryTestCase
 
         $count = $this->repository->count(['countryCode' => null]);
 
-        self::assertIsInt($count);
         self::assertGreaterThanOrEqual(1, $count);
     }
 
@@ -269,7 +262,6 @@ final class PhoneNumberRepositoryTest extends AbstractRepositoryTestCase
 
         $count = $this->repository->count(['watermark' => null]);
 
-        self::assertIsInt($count);
         self::assertGreaterThanOrEqual(1, $count);
     }
 
@@ -281,7 +273,6 @@ final class PhoneNumberRepositoryTest extends AbstractRepositoryTestCase
 
         $count = $this->repository->count(['rawData' => null]);
 
-        self::assertIsInt($count);
         self::assertGreaterThanOrEqual(1, $count);
     }
 
@@ -309,7 +300,6 @@ final class PhoneNumberRepositoryTest extends AbstractRepositoryTestCase
             ->getSingleScalarResult()
         ;
 
-        self::assertIsInt($count);
         self::assertGreaterThanOrEqual(1, $count);
     }
 

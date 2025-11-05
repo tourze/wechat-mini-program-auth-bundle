@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace WechatMiniProgramAuthBundle\Tests\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 use Tourze\PHPUnitSymfonyKernelTest\AbstractRepositoryTestCase;
@@ -15,6 +16,7 @@ use WechatMiniProgramBundle\Entity\Account;
 
 /**
  * @internal
+ * @extends AbstractRepositoryTestCase<CodeSessionLog>
  */
 #[CoversClass(CodeSessionLogRepository::class)]
 #[RunTestsInSeparateProcesses]
@@ -51,6 +53,7 @@ final class CodeSessionLogRepositoryTest extends AbstractRepositoryTestCase
         $miniProgram->setAppSecret('test-app-secret');
         $miniProgram->setValid(true);
         $entityManager = self::getContainer()->get('doctrine.orm.entity_manager');
+        self::assertInstanceOf(EntityManagerInterface::class, $entityManager);
         $entityManager->persist($miniProgram);
         $entityManager->flush();
 
@@ -123,7 +126,6 @@ final class CodeSessionLogRepositoryTest extends AbstractRepositoryTestCase
 
         $logs = $this->repository->findBy(['account' => $miniProgram]);
 
-        self::assertIsArray($logs);
         self::assertGreaterThanOrEqual(1, count($logs));
     }
 
@@ -136,7 +138,6 @@ final class CodeSessionLogRepositoryTest extends AbstractRepositoryTestCase
 
         $count = $this->repository->count(['account' => $miniProgram]);
 
-        self::assertIsInt($count);
         self::assertGreaterThanOrEqual(1, $count);
     }
 
@@ -173,7 +174,6 @@ final class CodeSessionLogRepositoryTest extends AbstractRepositoryTestCase
     {
         $count = $this->repository->count(['openId' => null]);
 
-        self::assertIsInt($count);
         self::assertGreaterThanOrEqual(0, $count);
     }
 
@@ -181,7 +181,6 @@ final class CodeSessionLogRepositoryTest extends AbstractRepositoryTestCase
     {
         $count = $this->repository->count(['openId' => null]);
 
-        self::assertIsInt($count);
         self::assertGreaterThanOrEqual(0, $count);
     }
 
@@ -189,7 +188,6 @@ final class CodeSessionLogRepositoryTest extends AbstractRepositoryTestCase
     {
         $count = $this->repository->count(['unionId' => null]);
 
-        self::assertIsInt($count);
         self::assertGreaterThanOrEqual(0, $count);
     }
 
@@ -197,7 +195,6 @@ final class CodeSessionLogRepositoryTest extends AbstractRepositoryTestCase
     {
         $count = $this->repository->count(['sessionKey' => null]);
 
-        self::assertIsInt($count);
         self::assertGreaterThanOrEqual(0, $count);
     }
 
@@ -205,7 +202,6 @@ final class CodeSessionLogRepositoryTest extends AbstractRepositoryTestCase
     {
         $count = $this->repository->count(['rawData' => null]);
 
-        self::assertIsInt($count);
         self::assertGreaterThanOrEqual(0, $count);
     }
 
@@ -218,7 +214,6 @@ final class CodeSessionLogRepositoryTest extends AbstractRepositoryTestCase
 
         $count = $this->repository->count(['account' => $miniProgram]);
 
-        self::assertIsInt($count);
         self::assertGreaterThanOrEqual(1, $count);
     }
 

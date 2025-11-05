@@ -345,7 +345,9 @@ class WechatMiniProgramCodeToSession extends LockableProcedure
 
         // 2. 生成访问令牌
         $token = $this->accessTokenService->createToken($bizUser);
+        /** @phpstan-ignore-next-line method.notFound AccessToken implementation provides getToken() method */
         $result['jwt'] = $token->getToken();
+        /** @phpstan-ignore-next-line method.notFound AccessToken implementation provides getToken() method */
         $result['access_token'] = $token->getToken();
 
         // 3. 收集手机号码信息

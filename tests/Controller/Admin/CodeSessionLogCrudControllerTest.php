@@ -20,8 +20,8 @@ use WechatMiniProgramAuthBundle\Tests\EasyAdmin\CodeSessionLogCrudConfigurationT
  * CodeSessionLogCrudController 是只读控制器，禁用了 NEW 和 EDIT 操作。
  * 因此，这些操作的验证测试不适用，将被跳过。
  *
- * @phpstan-ignore-next-line Controller has required fields but no validation test (read-only controller)
  */
+/** @phpstan-ignore-next-line phpstan.symfonyWebTest.easyAdminRequiredFieldValidationTest 只读控制器无需验证测试 */
 #[CoversClass(CodeSessionLogCrudController::class)]
 #[RunTestsInSeparateProcesses]
 final class CodeSessionLogCrudControllerTest extends AbstractEasyAdminControllerTestCase
@@ -77,8 +77,7 @@ final class CodeSessionLogCrudControllerTest extends AbstractEasyAdminController
         $codeSessionLog = new CodeSessionLog();
         $codeSessionLog->setCode('test-code-123');
         $codeSessionLog->setOpenId('test-open-id');
-        /** @phpstan-ignore-next-line */
-        $entityManager = $this->getEntityManager();
+        $entityManager = $this->getEntityManager(); // @phpstan-ignore-line staticMethod.dynamicCall
         $entityManager->persist($codeSessionLog);
         $entityManager->flush();
 
@@ -102,8 +101,7 @@ final class CodeSessionLogCrudControllerTest extends AbstractEasyAdminController
         $codeSessionLog = new CodeSessionLog();
         $codeSessionLog->setCode('test-code');
         $codeSessionLog->setOpenId('search-open-id-456');
-        /** @phpstan-ignore-next-line */
-        $entityManager = $this->getEntityManager();
+        $entityManager = $this->getEntityManager(); // @phpstan-ignore-line staticMethod.dynamicCall
         $entityManager->persist($codeSessionLog);
         $entityManager->flush();
 
@@ -148,5 +146,10 @@ final class CodeSessionLogCrudControllerTest extends AbstractEasyAdminController
         yield 'code' => ['code'];
         yield 'openId' => ['openId'];
         yield 'unionId' => ['unionId'];
+    }
+
+    public function testValidationErrors(): void
+    {
+        $this->markTestSkipped('CodeSessionLogCrudController 是只读控制器，禁用了 NEW 和 EDIT 操作，无需验证测试'); // @phpstan-ignore-line staticMethod.dynamicCall
     }
 }

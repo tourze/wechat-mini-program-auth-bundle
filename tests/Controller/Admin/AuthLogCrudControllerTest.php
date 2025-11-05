@@ -20,8 +20,8 @@ use WechatMiniProgramAuthBundle\Tests\EasyAdmin\AuthLogCrudConfigurationTest;
  * AuthLogCrudController 是只读控制器，禁用了 NEW 和 EDIT 操作。
  * 因此，这些操作的验证测试不适用，将被跳过。
  *
- * @phpstan-ignore-next-line Controller has required fields but no validation test (read-only controller)
  */
+/** @phpstan-ignore-next-line phpstan.symfonyWebTest.easyAdminRequiredFieldValidationTest 只读控制器无需验证测试 */
 #[CoversClass(AuthLogCrudController::class)]
 #[RunTestsInSeparateProcesses]
 final class AuthLogCrudControllerTest extends AbstractEasyAdminControllerTestCase
@@ -178,5 +178,10 @@ final class AuthLogCrudControllerTest extends AbstractEasyAdminControllerTestCas
 
         // 只读控制器不显示原始数据列（仅在详情页显示）
         // 也不显示更新时间列（实体未使用UpdateTimeAware trait）
+    }
+
+    public function testValidationErrors(): void
+    {
+        $this->markTestSkipped('AuthLogCrudController 是只读控制器，禁用了 NEW 和 EDIT 操作，无需验证测试'); // @phpstan-ignore-line staticMethod.dynamicCall
     }
 }

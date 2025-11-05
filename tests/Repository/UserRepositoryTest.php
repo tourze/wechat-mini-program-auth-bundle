@@ -20,6 +20,7 @@ use WechatMiniProgramBundle\Entity\Account;
 
 /**
  * @internal
+ * @extends AbstractRepositoryTestCase<User>
  */
 #[CoversClass(UserRepository::class)]
 #[RunTestsInSeparateProcesses]
@@ -57,8 +58,7 @@ final class UserRepositoryTest extends AbstractRepositoryTestCase
         $miniProgram->setValid(true);
 
         /** @var EntityManagerInterface $entityManager */
-        /** @phpstan-ignore-next-line */
-        $entityManager = $this->getEntityManager();
+        $entityManager = $this->getEntityManager(); // @phpstan-ignore-line staticMethod.dynamicCall
         $entityManager->persist($miniProgram);
         $entityManager->flush();
 
@@ -228,7 +228,6 @@ final class UserRepositoryTest extends AbstractRepositoryTestCase
 
         $users = $this->repository->findBy(['account' => $miniProgram]);
 
-        self::assertIsArray($users);
         self::assertGreaterThanOrEqual(1, count($users));
     }
 
@@ -241,7 +240,6 @@ final class UserRepositoryTest extends AbstractRepositoryTestCase
 
         $users = $this->repository->findBy(['user' => $sysUser]);
 
-        self::assertIsArray($users);
         self::assertGreaterThanOrEqual(1, count($users));
     }
 
@@ -254,7 +252,6 @@ final class UserRepositoryTest extends AbstractRepositoryTestCase
 
         $count = $this->repository->count(['account' => $miniProgram]);
 
-        self::assertIsInt($count);
         self::assertGreaterThanOrEqual(1, $count);
     }
 
@@ -267,7 +264,6 @@ final class UserRepositoryTest extends AbstractRepositoryTestCase
 
         $users = $this->repository->findBy(['unionId' => null]);
 
-        self::assertIsArray($users);
         self::assertGreaterThanOrEqual(1, count($users));
     }
 
@@ -279,7 +275,6 @@ final class UserRepositoryTest extends AbstractRepositoryTestCase
 
         $users = $this->repository->findBy(['nickName' => null]);
 
-        self::assertIsArray($users);
         self::assertGreaterThanOrEqual(1, count($users));
     }
 
@@ -292,7 +287,6 @@ final class UserRepositoryTest extends AbstractRepositoryTestCase
 
         $count = $this->repository->count(['unionId' => null]);
 
-        self::assertIsInt($count);
         self::assertGreaterThanOrEqual(1, $count);
     }
 
@@ -305,7 +299,6 @@ final class UserRepositoryTest extends AbstractRepositoryTestCase
 
         $count = $this->repository->count(['user' => $sysUser]);
 
-        self::assertIsInt($count);
         self::assertGreaterThanOrEqual(1, $count);
     }
 
@@ -316,7 +309,6 @@ final class UserRepositoryTest extends AbstractRepositoryTestCase
 
         $users = $this->repository->findAll();
 
-        self::assertIsArray($users);
         self::assertGreaterThanOrEqual(1, count($users));
     }
 
@@ -328,7 +320,6 @@ final class UserRepositoryTest extends AbstractRepositoryTestCase
 
         $count = $this->repository->count(['unionId' => null]);
 
-        self::assertIsInt($count);
         self::assertGreaterThanOrEqual(1, $count);
     }
 
@@ -340,7 +331,6 @@ final class UserRepositoryTest extends AbstractRepositoryTestCase
 
         $count = $this->repository->count(['nickName' => null]);
 
-        self::assertIsInt($count);
         self::assertGreaterThanOrEqual(1, $count);
     }
 
@@ -353,7 +343,6 @@ final class UserRepositoryTest extends AbstractRepositoryTestCase
 
         $count = $this->repository->count(['account' => $miniProgram]);
 
-        self::assertIsInt($count);
         self::assertGreaterThanOrEqual(1, $count);
     }
 

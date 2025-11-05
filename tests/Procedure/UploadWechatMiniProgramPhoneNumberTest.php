@@ -68,8 +68,7 @@ final class UploadWechatMiniProgramPhoneNumberTest extends AbstractProcedureTest
 
         // 在服务初始化之前设置 Mock
         /** @var Container $container */
-        /** @phpstan-ignore-next-line */
-        $container = $this->getContainer();
+        $container = $this->getContainer(); // @phpstan-ignore-line staticMethod.dynamicCall
         $container->set(Client::class, $mockClient);
 
         // 现在获取 procedure 服务（此时会使用我们的 Mock Client）
@@ -109,7 +108,6 @@ final class UploadWechatMiniProgramPhoneNumberTest extends AbstractProcedureTest
 
         $result = $this->procedure->execute();
 
-        $this->assertIsArray($result);
         $this->assertArrayHasKey('phoneNumber', $result);
         $this->assertEquals('13800138000', $result['phoneNumber']);
     }

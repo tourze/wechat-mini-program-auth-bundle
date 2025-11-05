@@ -41,7 +41,6 @@ final class WechatTextFormatterTest extends AbstractIntegrationTestCase
 
         $result = $this->formatter->formatText($text, $params);
 
-        $this->assertIsString($result);
         $this->assertStringContainsString('Hello', $result);
     }
 
@@ -52,7 +51,6 @@ final class WechatTextFormatterTest extends AbstractIntegrationTestCase
 
         $result = $this->formatter->formatText($text, $params);
 
-        $this->assertIsString($result);
         $this->assertInstanceOf(WechatTextFormatter::class, $this->formatter);
     }
 

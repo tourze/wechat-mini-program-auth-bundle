@@ -152,9 +152,7 @@ final class UserCrudController extends AbstractCrudController
             })
         ;
 
-        yield AssociationField::new('user', '关联用户')
-            ->autocomplete()
-        ;
+        yield AssociationField::new('user', '关联用户');
 
         // IP和时间戳字段
         yield TextField::new('createFromIp', '创建IP')

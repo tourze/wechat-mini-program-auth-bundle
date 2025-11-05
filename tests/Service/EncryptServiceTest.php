@@ -54,7 +54,6 @@ final class EncryptServiceTest extends TestCase
     public function testEncryptServiceInstantiation(): void
     {
         $service = new EncryptService();
-        $this->assertNotNull($service);
         $this->assertSame(EncryptService::class, $service::class);
     }
 
