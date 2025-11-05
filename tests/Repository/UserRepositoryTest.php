@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace WechatMiniProgramAuthBundle\Tests\Repository;
 
-use BizUserBundle\Entity\BizUser;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Tourze\PHPUnitSymfonyKernelTest\AbstractRepositoryTestCase;
+use Tourze\UserServiceContracts\UserManagerInterface;
 use Tourze\WechatMiniProgramAppIDContracts\MiniProgramInterface;
 use WechatMiniProgramAuthBundle\Entity\User;
 use WechatMiniProgramAuthBundle\Enum\Language;
@@ -67,18 +67,9 @@ final class UserRepositoryTest extends AbstractRepositoryTestCase
 
     private function createTestSystemUser(): UserInterface
     {
-        $sysUser = new BizUser();
-        $sysUser->setUsername('system-user-123');
-        $sysUser->setEmail('system-user-123@example.com');
-        $sysUser->setNickName('System User 123');
-
-        /** @var EntityManagerInterface $entityManager */
-        /** @phpstan-ignore-next-line */
-        $entityManager = $this->getEntityManager();
-        $entityManager->persist($sysUser);
-        $entityManager->flush();
-
-        return $sysUser;
+        $user = self::getService(UserManagerInterface::class)->createUser('system-user-123');
+        self::getService(UserManagerInterface::class)->saveUser($user);
+        return $user;
     }
 
     public function testCreateUser(): void

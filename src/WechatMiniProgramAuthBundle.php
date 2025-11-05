@@ -10,6 +10,7 @@ use Symfony\Bundle\SecurityBundle\SecurityBundle;
 use Symfony\Component\DependencyInjection\Compiler\PassConfig;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
+use Tourze\AccessTokenBundle\AccessTokenBundle;
 use Tourze\BundleDependency\BundleDependencyInterface;
 use Tourze\DoctrineIpBundle\DoctrineIpBundle;
 use Tourze\DoctrineResolveTargetEntityBundle\DependencyInjection\Compiler\ResolveTargetEntityPass;
@@ -64,6 +65,7 @@ class WechatMiniProgramAuthBundle extends Bundle implements BundleDependencyInte
             WechatMiniProgramBundle::class => ['all' => true],
             JsonRPCSecurityBundle::class => ['all' => true],
             EasyAdminMenuBundle::class => ['all' => true],
+            AccessTokenBundle::class => ['all' => true],
         ];
     }
 }
