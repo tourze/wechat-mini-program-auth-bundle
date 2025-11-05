@@ -44,7 +44,6 @@
     "tourze/enum-extra": "1.0.*",
     "tourze/http-client-bundle": "1.0.*",
     "tourze/json-rpc-core": "1.0.*",
-    "tourze/json-rpc-endpoint-bundle": "0.1.*",
     "tourze/json-rpc-lock-bundle": "1.0.*",
     "tourze/json-rpc-log-bundle": "1.0.*",
     "tourze/lock-service-bundle": "1.0.*",
