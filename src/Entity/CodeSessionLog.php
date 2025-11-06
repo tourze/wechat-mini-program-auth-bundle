@@ -9,7 +9,6 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 use Tourze\DoctrineIndexedBundle\Attribute\IndexColumn;
 use Tourze\DoctrineIpBundle\Traits\CreatedFromIpAware;
-use Tourze\DoctrineTimestampBundle\Attribute\CreateTimeColumn;
 use Tourze\DoctrineTimestampBundle\Traits\CreateTimeAware;
 use Tourze\LockServiceBundle\Model\LockEntity;
 use Tourze\ScheduleEntityCleanBundle\Attribute\AsScheduleClean;
